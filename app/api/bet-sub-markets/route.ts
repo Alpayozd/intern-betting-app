@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
+import { nanoid } from "nanoid"
+import { Prisma } from "@prisma/client"
 
 const createBetSubMarketSchema = z.object({
   betMarketId: z.string()
@@ -185,35 +187,37 @@ export async function POST(request: NextRequest) {
         throw new Error("createdByUserId is empty")
       }
       
-      // Generer ID
-      const subMarketId = crypto.randomUUID ? crypto.randomUUID() : `cl${Date.now()}${Math.random().toString(36).substr(2, 9)}`
+      // Generer ID med nanoid
+      const subMarketId = nanoid()
       
       // Log før oprettelse
-      console.log("About to create BetSubMarket with:", {
+      console.log("About to create BetSubMarket with RAW SQL:", {
         id: subMarketId,
         betMarketId: finalBetMarketIdValue,
         betMarketIdType: typeof finalBetMarketIdValue,
         betMarketIdLength: finalBetMarketIdValue.length,
         title: finalTitle,
-        createdByUserId: finalCreatedByUserId
+        createdByUserId: finalCreatedByUserId,
+        closesAt: finalClosesAt.toISOString()
       })
       
       // Opret BetSubMarket med RAW SQL for at omgå Prisma Client problem
-      await tx.$executeRaw`
+      // Brug Prisma.sql template tag for korrekt parameter binding
+      await tx.$executeRaw(Prisma.sql`
         INSERT INTO "BetSubMarket" ("id", "betMarketId", "title", "description", "status", "createdByUserId", "closesAt", "createdAt")
-        VALUES (${subMarketId}, ${finalBetMarketIdValue}, ${finalTitle}, ${finalDescription}, 'OPEN', ${finalCreatedByUserId}, ${finalClosesAt}, NOW())
-      `
+        VALUES (${subMarketId}, ${finalBetMarketIdValue}, ${finalTitle}, ${finalDescription}, 'OPEN', ${finalCreatedByUserId}, ${finalClosesAt}::timestamp, NOW())
+      `)
       
       console.log("BetSubMarket created with id:", subMarketId, "betMarketId:", finalBetMarketIdValue)
       
       // Opret BetOptions derefter
       if (betOptions.length > 0) {
         for (const opt of betOptions) {
-          const optionId = crypto.randomUUID ? crypto.randomUUID() : `cl${Date.now()}${Math.random().toString(36).substr(2, 9)}`
-          await tx.$executeRaw`
+          const optionId = nanoid()
+          await tx.$executeRaw(Prisma.sql`
             INSERT INTO "BetOption" ("id", "betSubMarketId", "label", "odds", "createdAt")
-            VALUES (${optionId}, ${subMarketId}, ${opt.label.trim()}, ${opt.odds}, NOW())
-          `
+            VALUES (${optionId}, ${subMarketId}, ${opt.label.trim()}, ${opt.odds}::double precision, NOW())
+          `)
         }
       }
       
