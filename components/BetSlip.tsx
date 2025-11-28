@@ -228,27 +228,27 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
           left: 0,
           right: 0,
           zIndex: 10000,
-          maxHeight: selections.length > 0 ? '40vh' : '30vh',
+          maxHeight: selections.length > 0 ? '28vh' : '20vh',
           display: 'flex',
           flexDirection: 'column'
         }}
       >
         {/* Header - Fixed */}
-        <div className="bg-blue-600 text-white px-3 py-2 flex justify-between items-center flex-shrink-0 border-b border-blue-700">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-bold">Bet Slip</h2>
-            <span className="bg-blue-700 px-2 py-0.5 rounded-full text-xs font-bold">
+        <div className="bg-blue-600 text-white px-2 py-1.5 flex justify-between items-center flex-shrink-0 border-b border-blue-700">
+          <div className="flex items-center gap-1.5">
+            <h2 className="text-xs font-bold">Bet Slip</h2>
+            <span className="bg-blue-700 px-1.5 py-0.5 rounded-full text-xs font-bold">
               {selections.length}
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <div className="text-xs">
-              <span className="opacity-80">Points:</span>{" "}
+              <span className="opacity-80">P:</span>{" "}
               <span className="font-bold">{formatNumber(userPoints)}</span>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-white hover:text-gray-200 active:text-gray-300 text-lg font-bold w-8 h-8 flex items-center justify-center touch-manipulation"
+              className="text-white hover:text-gray-200 active:text-gray-300 text-base font-bold w-7 h-7 flex items-center justify-center touch-manipulation"
               title="Minimer"
               aria-label="Luk bet slip"
             >
@@ -258,19 +258,16 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
         </div>
 
         {/* Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto overscroll-contain" style={{ maxHeight: 'calc(40vh - 120px)' }}>
+        <div className="flex-1 overflow-y-auto overscroll-contain" style={{ maxHeight: 'calc(28vh - 90px)' }}>
           {selections.length === 0 ? (
-            <div className="p-3 text-center text-gray-500">
-              <p className="text-xs">Ingen bets i slip'en</p>
-              <p className="text-xs mt-1 opacity-75">
-                Vælg en option fra bet markets ovenfor
-              </p>
+            <div className="p-2 text-center text-gray-500">
+              <p className="text-xs">Ingen bets</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
               {selections.map((selection, index) => (
-                <div key={`${selection.betSubMarketId}-${selection.betOptionId}-${index}`} className="p-2 hover:bg-gray-50">
-                  <div className="flex justify-between items-start gap-2">
+                <div key={`${selection.betSubMarketId}-${selection.betOptionId}-${index}`} className="p-1.5 hover:bg-gray-50">
+                  <div className="flex justify-between items-start gap-1.5">
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-xs text-gray-900 line-clamp-1">
                         {selection.betMarketTitle}
@@ -281,15 +278,15 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
                     </div>
                     <button
                       onClick={() => removeSelection(index)}
-                      className="text-red-600 hover:text-red-800 active:text-red-900 text-xl font-bold flex-shrink-0 w-7 h-7 flex items-center justify-center touch-manipulation"
+                      className="text-red-600 hover:text-red-800 active:text-red-900 text-lg font-bold flex-shrink-0 w-6 h-6 flex items-center justify-center touch-manipulation"
                       title="Fjern"
                       aria-label="Fjern bet"
                     >
                       ×
                     </button>
                   </div>
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <label className="text-xs text-gray-700 whitespace-nowrap">Stake:</label>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <label className="text-xs text-gray-700 whitespace-nowrap">S:</label>
                     <input
                       type="text"
                       inputMode="numeric"
@@ -311,11 +308,11 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
                           updateStake(index, '10')
                         }
                       }}
-                      className="w-16 px-2 py-1 border border-gray-300 rounded text-xs min-h-[32px] touch-manipulation"
+                      className="w-14 px-1.5 py-0.5 border border-gray-300 rounded text-xs min-h-[28px] touch-manipulation"
                     />
                     <span className="text-xs text-gray-600">pts</span>
                     <span className="text-xs font-semibold text-blue-600 ml-auto">
-                      {selection.potentialPayout.toFixed(0)} pts
+                      {selection.potentialPayout.toFixed(0)}
                     </span>
                   </div>
                 </div>
@@ -326,17 +323,17 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
 
         {/* Footer - Fixed */}
         {selections.length > 0 && (
-          <div className="bg-gray-50 border-t border-gray-300 px-3 py-2 flex-shrink-0">
-            <div className="flex justify-between items-center mb-2">
+          <div className="bg-gray-50 border-t border-gray-300 px-2 py-1.5 flex-shrink-0">
+            <div className="flex justify-between items-center mb-1.5">
               <div>
-                <p className="text-xs text-gray-600">Total Stake</p>
-                <p className="text-sm font-bold text-gray-900">
+                <p className="text-xs text-gray-600">Stake:</p>
+                <p className="text-xs font-bold text-gray-900">
                   {formatNumber(totalStake)} pts
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-xs text-gray-600">Potentiel Gevinst</p>
-                <p className="text-sm font-bold text-green-600">
+                <p className="text-xs text-gray-600">Gevinst:</p>
+                <p className="text-xs font-bold text-green-600">
                   {totalPotentialPayout.toFixed(0)} pts
                 </p>
               </div>
@@ -350,14 +347,14 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
                 selections.length === 0 ||
                 selections.some(s => !s.stakePoints || s.stakePoints <= 0)
               }
-              className="w-full bg-green-600 text-white py-2.5 px-3 rounded-lg font-semibold text-sm hover:bg-green-700 active:bg-green-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] touch-manipulation"
+              className="w-full bg-green-600 text-white py-1.5 px-2 rounded-lg font-semibold text-xs hover:bg-green-700 active:bg-green-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[36px] touch-manipulation"
             >
               {isPlacing
                 ? "Placerer..."
-                : `Placér ${selections.length} bet${selections.length !== 1 ? "s" : ""} (${formatNumber(totalStake)} pts)`}
+                : `Placér ${selections.length} (${formatNumber(totalStake)} pts)`}
             </button>
             {totalStake > userPoints && (
-              <p className="text-red-600 text-xs mt-1 text-center">
+              <p className="text-red-600 text-xs mt-0.5 text-center">
                 Utilstrækkelige points
               </p>
             )}
