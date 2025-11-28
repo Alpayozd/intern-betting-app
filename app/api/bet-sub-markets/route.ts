@@ -148,55 +148,55 @@ export async function POST(request: NextRequest) {
     
     // Opret BetSubMarket med options i en transaktion
     const betSubMarket = await prisma.$transaction(async (tx) => {
-      // Final validation inde i transaktionen
-      const finalBetMarketId = String(trimmedBetMarketId).trim()
-      
-      if (!finalBetMarketId || finalBetMarketId.length === 0) {
-        console.error("CRITICAL: betMarketId is empty in transaction:", {
+      // Final validation - sikrer at betMarketId er en non-empty string
+      if (!trimmedBetMarketId || typeof trimmedBetMarketId !== 'string' || trimmedBetMarketId.trim().length === 0) {
+        console.error("CRITICAL: betMarketId validation failed in transaction:", {
           original: betMarketId,
           trimmed: trimmedBetMarketId,
-          final: finalBetMarketId
+          type: typeof trimmedBetMarketId
         })
-        throw new Error("betMarketId is missing in transaction")
+        throw new Error("betMarketId is missing or invalid in transaction")
       }
       
-      // Log data objektet før Prisma create
-      const prismaData = {
-        betMarketId: finalBetMarketId,
-        title: title.trim(),
-        description: description?.trim() || null,
-        closesAt: new Date(closesAt),
-        createdByUserId: session.user.id,
-        betOptions: {
-          create: betOptions.map((opt) => ({
-            label: opt.label.trim(),
-            odds: opt.odds,
-          })),
-        },
+      // Eksplicit konstruer alle værdier først
+      const finalBetMarketIdValue = trimmedBetMarketId.trim()
+      const finalTitle = title.trim()
+      const finalDescription = description?.trim() || null
+      const finalClosesAt = new Date(closesAt)
+      const finalCreatedByUserId = session.user.id
+      
+      // Valider alle værdier
+      if (!finalBetMarketIdValue || finalBetMarketIdValue.length === 0) {
+        throw new Error("betMarketId is empty after trim")
+      }
+      if (!finalTitle || finalTitle.length === 0) {
+        throw new Error("title is empty")
+      }
+      if (!finalCreatedByUserId || finalCreatedByUserId.length === 0) {
+        throw new Error("createdByUserId is empty")
       }
       
-      // Log for debugging (uden at inkludere ekstra felter i selve data objektet)
-      console.log("Prisma create data:", JSON.stringify(prismaData, null, 2))
-      console.log("betMarketId check:", {
-        value: prismaData.betMarketId,
-        type: typeof prismaData.betMarketId,
-        length: prismaData.betMarketId?.length,
-        isNull: prismaData.betMarketId === null,
-        isUndefined: prismaData.betMarketId === undefined
+      // Log før Prisma create
+      console.log("About to create BetSubMarket with:", {
+        betMarketId: finalBetMarketIdValue,
+        betMarketIdType: typeof finalBetMarketIdValue,
+        betMarketIdLength: finalBetMarketIdValue.length,
+        title: finalTitle,
+        createdByUserId: finalCreatedByUserId
       })
       
-      // Eksplicit konstruer data objektet igen for at sikre ingen ekstra felter
+      // Opret BetSubMarket - konstruer data objektet direkte uden mellemliggende variabler
       const subMarket = await tx.betSubMarket.create({
         data: {
-          betMarketId: String(finalBetMarketId), // Eksplicit string konvertering
-          title: String(title.trim()),
-          description: description?.trim() || null,
-          closesAt: new Date(closesAt),
-          createdByUserId: String(session.user.id),
+          betMarketId: finalBetMarketIdValue,
+          title: finalTitle,
+          description: finalDescription,
+          closesAt: finalClosesAt,
+          createdByUserId: finalCreatedByUserId,
           betOptions: {
             create: betOptions.map((opt) => ({
-              label: String(opt.label.trim()),
-              odds: Number(opt.odds),
+              label: opt.label.trim(),
+              odds: opt.odds,
             })),
           },
         },
