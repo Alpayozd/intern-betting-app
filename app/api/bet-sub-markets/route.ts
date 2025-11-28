@@ -85,6 +85,7 @@ export async function POST(request: NextRequest) {
     console.log("After Zod parsing - betMarketId:", betMarketId, "type:", typeof betMarketId)
 
     // Hent bet market og valider
+    console.log("Looking for BetMarket with id:", betMarketId)
     const betMarket = await prisma.betMarket.findUnique({
       where: { id: betMarketId },
       include: {
@@ -97,11 +98,18 @@ export async function POST(request: NextRequest) {
     })
 
     if (!betMarket) {
+      console.error("BetMarket not found with id:", betMarketId)
       return NextResponse.json(
         { error: "Bet market ikke fundet" },
         { status: 404 }
       )
     }
+    
+    console.log("BetMarket found:", {
+      id: betMarket.id,
+      title: betMarket.title,
+      groupId: betMarket.groupId
+    })
 
     // Tjek om brugeren er admin eller medlem
     const membership = betMarket.group.memberships.find(
