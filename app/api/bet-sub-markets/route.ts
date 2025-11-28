@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Opret BetSubMarket med options i en transaktion
-    // PRØVER ANDEN TILGANG: Opret BetSubMarket først, derefter BetOptions separat
+    // BRUGER RAW SQL som workaround for Prisma Client problem
     const betSubMarket = await prisma.$transaction(async (tx) => {
       // Final validation - sikrer at betMarketId er en non-empty string
       if (!trimmedBetMarketId || typeof trimmedBetMarketId !== 'string' || trimmedBetMarketId.trim().length === 0) {
@@ -185,8 +185,12 @@ export async function POST(request: NextRequest) {
         throw new Error("createdByUserId is empty")
       }
       
-      // Log før Prisma create
+      // Generer ID
+      const subMarketId = crypto.randomUUID ? crypto.randomUUID() : `cl${Date.now()}${Math.random().toString(36).substr(2, 9)}`
+      
+      // Log før oprettelse
       console.log("About to create BetSubMarket with:", {
+        id: subMarketId,
         betMarketId: finalBetMarketIdValue,
         betMarketIdType: typeof finalBetMarketIdValue,
         betMarketIdLength: finalBetMarketIdValue.length,
@@ -194,33 +198,28 @@ export async function POST(request: NextRequest) {
         createdByUserId: finalCreatedByUserId
       })
       
-      // Opret BetSubMarket FØRST (uden nested creates)
-      const subMarket = await tx.betSubMarket.create({
-        data: {
-          betMarketId: finalBetMarketIdValue,
-          title: finalTitle,
-          description: finalDescription,
-          closesAt: finalClosesAt,
-          createdByUserId: finalCreatedByUserId,
-        },
-      })
+      // Opret BetSubMarket med RAW SQL for at omgå Prisma Client problem
+      await tx.$executeRaw`
+        INSERT INTO "BetSubMarket" ("id", "betMarketId", "title", "description", "status", "createdByUserId", "closesAt", "createdAt")
+        VALUES (${subMarketId}, ${finalBetMarketIdValue}, ${finalTitle}, ${finalDescription}, 'OPEN', ${finalCreatedByUserId}, ${finalClosesAt}, NOW())
+      `
       
-      console.log("BetSubMarket created with id:", subMarket.id, "betMarketId:", subMarket.betMarketId)
+      console.log("BetSubMarket created with id:", subMarketId, "betMarketId:", finalBetMarketIdValue)
       
       // Opret BetOptions derefter
       if (betOptions.length > 0) {
-        await tx.betOption.createMany({
-          data: betOptions.map((opt) => ({
-            betSubMarketId: subMarket.id,
-            label: opt.label.trim(),
-            odds: opt.odds,
-          })),
-        })
+        for (const opt of betOptions) {
+          const optionId = crypto.randomUUID ? crypto.randomUUID() : `cl${Date.now()}${Math.random().toString(36).substr(2, 9)}`
+          await tx.$executeRaw`
+            INSERT INTO "BetOption" ("id", "betSubMarketId", "label", "odds", "createdAt")
+            VALUES (${optionId}, ${subMarketId}, ${opt.label.trim()}, ${opt.odds}, NOW())
+          `
+        }
       }
       
       // Hent den fulde BetSubMarket med options
       const fullSubMarket = await tx.betSubMarket.findUnique({
-        where: { id: subMarket.id },
+        where: { id: subMarketId },
         include: {
           betOptions: true,
         },
