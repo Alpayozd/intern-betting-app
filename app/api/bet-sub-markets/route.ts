@@ -209,13 +209,25 @@ export async function POST(request: NextRequest) {
       
       // Opret BetOptions derefter
       if (betOptions.length > 0) {
-        await tx.betOption.createMany({
-          data: betOptions.map((opt) => ({
-            betSubMarketId: subMarket.id,
-            label: opt.label.trim(),
-            odds: opt.odds,
-          })),
-        })
+        try {
+          await tx.betOption.createMany({
+            data: betOptions.map((opt) => ({
+              betSubMarketId: subMarket.id,
+              label: opt.label.trim(),
+              odds: opt.odds,
+            })),
+          })
+          console.log("BetOptions created successfully")
+        } catch (betOptionError: any) {
+          console.error("Error creating BetOptions:", {
+            error: betOptionError,
+            code: betOptionError?.code,
+            meta: betOptionError?.meta,
+            message: betOptionError?.message,
+            fullError: JSON.stringify(betOptionError, null, 2)
+          })
+          throw betOptionError
+        }
       }
       
       // Hent den fulde BetSubMarket med options
@@ -242,20 +254,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.error("Create bet sub market error:", error)
+    // Log fuld fejl med alle detaljer
+    console.error("Create bet sub market error (full):", JSON.stringify(error, null, 2))
+    console.error("Error details:", {
+      name: (error as any)?.name,
+      message: (error as any)?.message,
+      code: (error as any)?.code,
+      meta: (error as any)?.meta,
+      stack: (error as any)?.stack
+    })
     
-    // Return mere detaljeret fejl i development
-    const errorMessage = process.env.NODE_ENV === "development" 
-      ? (error as any)?.message || "Der opstod en fejl"
-      : "Der opstod en fejl"
+    // Return mere detaljeret fejl
+    const errorMessage = (error as any)?.message || "Der opstod en fejl"
     
     return NextResponse.json(
       { 
         error: errorMessage,
-        details: process.env.NODE_ENV === "development" ? {
+        details: {
           code: (error as any)?.code,
           meta: (error as any)?.meta,
-        } : undefined
+          name: (error as any)?.name,
+        }
       },
       { status: 500 }
     )
