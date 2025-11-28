@@ -101,80 +101,113 @@ async function main() {
   const betMarket1 = await prisma.betMarket.create({
     data: {
       groupId: group.id,
-      title: "Hvem spiser flest stykker sushi i aften?",
-      description: "Bettet afgøres efter måltidet. Den der spiser flest stykker vinder.",
+      title: "Sushi Night",
+      description: "Bettet afgøres efter måltidet.",
       status: "OPEN",
       createdByUserId: user1.id,
       closesAt,
-      betOptions: {
+      betSubMarkets: {
         create: [
           {
-            label: "Alpay",
-            odds: 1.80,
-          },
-          {
-            label: "Jonas",
-            odds: 2.25,
-          },
-          {
-            label: "Mehmet",
-            odds: 3.10,
+            title: "Hvem spiser flest stykker sushi?",
+            description: "Den der spiser flest stykker vinder.",
+            status: "OPEN",
+            createdByUserId: user1.id,
+            closesAt,
+            betOptions: {
+              create: [
+                {
+                  label: "Alpay",
+                  odds: 1.80,
+                },
+                {
+                  label: "Jonas",
+                  odds: 2.25,
+                },
+                {
+                  label: "Mehmet",
+                  odds: 3.10,
+                },
+              ],
+            },
           },
         ],
       },
     },
     include: {
-      betOptions: true,
+      betSubMarkets: {
+        include: {
+          betOptions: true,
+        },
+      },
     },
   })
 
   console.log("✅ Bet market oprettet:", betMarket1.title)
 
   // Opret test bet market (afgjort)
+  const pastClosesAt = new Date(Date.now() - 3600000) // Lukket for 1 time siden
   const betMarket2 = await prisma.betMarket.create({
     data: {
       groupId: group.id,
-      title: "Hvem kommer først til restauranten?",
-      description: "Første person der ankommer vinder.",
-      status: "SETTLED",
+      title: "Restaurant Night",
+      description: "Bettet om hvem kommer først.",
+      status: "OPEN",
       createdByUserId: user1.id,
-      closesAt: new Date(Date.now() - 3600000), // Lukket for 1 time siden
-      betOptions: {
+      closesAt: pastClosesAt,
+      betSubMarkets: {
         create: [
           {
-            label: "Alpay",
-            odds: 2.00,
-          },
-          {
-            label: "Jonas",
-            odds: 1.75,
-          },
-          {
-            label: "Mehmet",
-            odds: 2.50,
+            title: "Hvem kommer først til restauranten?",
+            description: "Første person der ankommer vinder.",
+            status: "SETTLED",
+            createdByUserId: user1.id,
+            closesAt: pastClosesAt,
+            betOptions: {
+              create: [
+                {
+                  label: "Alpay",
+                  odds: 2.00,
+                },
+                {
+                  label: "Jonas",
+                  odds: 1.75,
+                },
+                {
+                  label: "Mehmet",
+                  odds: 2.50,
+                },
+              ],
+            },
           },
         ],
       },
     },
     include: {
-      betOptions: true,
+      betSubMarkets: {
+        include: {
+          betOptions: true,
+        },
+      },
     },
   })
 
-  // Opret settlement for betMarket2
-  const winningOption = betMarket2.betOptions[0] // Alpay vandt
-  await prisma.betSettlement.create({
+  const betSubMarket2 = betMarket2.betSubMarkets[0]
+  const winningOption = betSubMarket2.betOptions[0] // Alpay vandt
+
+  // Opret settlement for betSubMarket2
+  await prisma.betSubMarketSettlement.create({
     data: {
-      betMarketId: betMarket2.id,
+      betSubMarketId: betSubMarket2.id,
       winningOptionId: winningOption.id,
       settledByUserId: user1.id,
     },
   })
 
-  // Opret nogle test bets på betMarket2
+  // Opret nogle test bets på betSubMarket2
   const bet1 = await prisma.betSelection.create({
     data: {
-      betMarketId: betMarket2.id,
+      betSubMarketId: betSubMarket2.id,
       betOptionId: winningOption.id, // Vinder!
       userId: user1.id,
       stakePoints: 100,
@@ -182,7 +215,7 @@ async function main() {
     },
   })
 
-  // Opdater point saldo for user1 (har vundet)
+  // Opdater point saldo for user1 (har vundet - payout allerede givet i settlement)
   await prisma.groupScore.update({
     where: {
       groupId_userId: {
@@ -192,35 +225,23 @@ async function main() {
     },
     data: {
       totalPoints: {
-        increment: 200, // Payout
+        increment: 200, // Payout (stake allerede trukket ved bet placement)
       },
     },
   })
 
   const bet2 = await prisma.betSelection.create({
     data: {
-      betMarketId: betMarket2.id,
-      betOptionId: betMarket2.betOptions[1].id, // Taber
+      betSubMarketId: betSubMarket2.id,
+      betOptionId: betSubMarket2.betOptions[1].id, // Taber
       userId: user2.id,
       stakePoints: 50,
       potentialPayoutPoints: 87.5,
     },
   })
 
-  // Opdater point saldo for user2 (har tabt - stake allerede trukket)
-  await prisma.groupScore.update({
-    where: {
-      groupId_userId: {
-        groupId: group.id,
-        userId: user2.id,
-      },
-    },
-    data: {
-      totalPoints: {
-        decrement: 50, // Stake trukket
-      },
-    },
-  })
+  // Opdater point saldo for user2 (har tabt - stake allerede trukket ved bet placement)
+  // Ingen payout for tabende bets
 
   console.log("✅ Test bets oprettet")
   console.log("✅ Seed færdig!")

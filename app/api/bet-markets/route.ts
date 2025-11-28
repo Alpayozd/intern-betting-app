@@ -9,14 +9,6 @@ const createBetMarketSchema = z.object({
   title: z.string().min(1, "Titel er påkrævet"),
   description: z.string().optional(),
   closesAt: z.string().datetime(),
-  options: z
-    .array(
-      z.object({
-        label: z.string().min(1, "Label er påkrævet"),
-        odds: z.number().positive("Odds skal være positiv"),
-      })
-    )
-    .min(2, "Der skal være mindst 2 options"),
 })
 
 // POST - Opret nyt bet market
@@ -28,7 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { groupId, title, description, closesAt, options } =
+    const { groupId, title, description, closesAt } =
       createBetMarketSchema.parse(body)
 
     // Tjek om brugeren er medlem af gruppen
@@ -48,7 +40,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Opret bet market med options
+    // Opret bet market (uden options - de tilføjes via BetSubMarkets)
     const betMarket = await prisma.betMarket.create({
       data: {
         groupId,
@@ -57,15 +49,8 @@ export async function POST(request: NextRequest) {
         closesAt: new Date(closesAt),
         createdByUserId: session.user.id,
         status: "OPEN",
-        betOptions: {
-          create: options.map((opt) => ({
-            label: opt.label,
-            odds: opt.odds,
-          })),
-        },
       },
       include: {
-        betOptions: true,
         createdBy: {
           select: {
             id: true,

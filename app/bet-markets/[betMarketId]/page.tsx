@@ -4,8 +4,7 @@ import { authOptions } from "@/lib/auth"
 import Navbar from "@/components/Navbar"
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
-import SettleBetMarketForm from "@/components/SettleBetMarketForm"
-import SingleBetMarket from "@/components/SingleBetMarket"
+import BetMarketCard from "@/components/BetMarketCard"
 import { formatNumber } from "@/lib/format"
 
 export default async function BetMarketDetailPage({
@@ -34,35 +33,31 @@ export default async function BetMarketDetailPage({
           name: true,
         },
       },
-      betOptions: {
+      betSubMarkets: {
         include: {
-          _count: {
-            select: {
-              betSelections: true,
+          betOptions: {
+            include: {
+              _count: {
+                select: {
+                  betSelections: true,
+                },
+              },
             },
           },
-        },
-        orderBy: {
-          createdAt: "asc",
-        },
-      },
-      betSelections: {
-        where: {
-          userId: session.user.id,
-        },
-        include: {
-          betOption: true,
-        },
-      },
-      settlement: {
-        include: {
-          winningOption: true,
-          settledBy: {
+          settlement: {
+            include: {
+              winningOption: true,
+            },
+          },
+          createdBy: {
             select: {
               id: true,
               name: true,
             },
           },
+        },
+        orderBy: {
+          createdAt: "desc",
         },
       },
     },
@@ -150,15 +145,6 @@ export default async function BetMarketDetailPage({
               Lukker: {new Date(betMarket.closesAt).toLocaleString("da-DK")}
             </span>
           </div>
-          {betMarket.settlement && (
-            <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm">
-                <strong>Vinder:</strong> {betMarket.settlement.winningOption.label} • Afgjort af{" "}
-                {betMarket.settlement.settledBy.name} den{" "}
-                {new Date(betMarket.settlement.settledAt).toLocaleString("da-DK")}
-              </p>
-            </div>
-          )}
         </div>
 
         {userScore && (
@@ -169,84 +155,34 @@ export default async function BetMarketDetailPage({
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
-          <div className="lg:col-span-3">
-            {userScore && (
-              <SingleBetMarket
-                betMarket={{
-                  id: betMarket.id,
-                  title: betMarket.title,
-                  description: betMarket.description,
-                  status: betMarket.status,
-                  closesAt: betMarket.closesAt,
-                  betOptions: betMarket.betOptions.map((opt) => ({
+        <div className="mb-8">
+          {userScore && (
+            <BetMarketCard
+              betMarket={{
+                id: betMarket.id,
+                title: betMarket.title,
+                description: betMarket.description,
+                status: betMarket.status,
+                closesAt: betMarket.closesAt,
+                betSubMarkets: betMarket.betSubMarkets.map((sm) => ({
+                  id: sm.id,
+                  title: sm.title,
+                  description: sm.description,
+                  status: sm.status,
+                  closesAt: sm.closesAt,
+                  betOptions: sm.betOptions.map((opt) => ({
                     id: opt.id,
                     label: opt.label,
                     odds: opt.odds,
                     _count: opt._count,
                   })),
-                  settlement: betMarket.settlement,
-                }}
-                userPoints={userScore.totalPoints}
-                groupId={betMarket.groupId}
-              />
-            )}
-
-            {betMarket.betSelections.length > 0 && (
-              <div className="bg-white rounded-lg shadow p-6 mt-6">
-                <h2 className="text-xl font-semibold mb-4">Dine Bets</h2>
-                <div className="space-y-3">
-                  {betMarket.betSelections.map((selection) => {
-                    const isWinner =
-                      betMarket.settlement?.winningOptionId ===
-                      selection.betOptionId
-                    return (
-                      <div
-                        key={selection.id}
-                        className={`border rounded-lg p-4 ${
-                          isWinner ? "bg-green-50 border-green-300" : ""
-                        }`}
-                      >
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <span className="font-medium">
-                              {selection.betOption.label}
-                            </span>
-                            {isWinner && (
-                              <span className="ml-2 text-green-700 font-semibold">
-                                ✓ Vinder
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            <div>
-                              Stake: {selection.stakePoints} pts
-                            </div>
-                            <div className="text-sm text-gray-600">
-                              Potentiel gevinst:{" "}
-                              {selection.potentialPayoutPoints.toFixed(0)} pts
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="lg:sticky lg:top-4 lg:self-start">
-            {isAdmin &&
-              betMarket.status !== "SETTLED" &&
-              !isOpen &&
-              betMarket.betOptions.length > 0 && (
-                <SettleBetMarketForm
-                  betMarketId={betMarket.id}
-                  betOptions={betMarket.betOptions}
-                />
-              )}
-          </div>
+                  settlement: sm.settlement,
+                })),
+              }}
+              isOpen={isOpen}
+              isAdmin={isAdmin}
+            />
+          )}
         </div>
       </main>
     </div>

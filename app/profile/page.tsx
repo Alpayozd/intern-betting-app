@@ -27,11 +27,17 @@ export default async function ProfilePage() {
   const userBetSelections = await prisma.betSelection.findMany({
     where: { userId: session.user.id },
     include: {
-      betMarket: {
+      betSubMarket: {
         select: {
           id: true,
           title: true,
           status: true,
+          betMarket: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
         },
       },
       betOption: {
@@ -120,13 +126,13 @@ export default async function ProfilePage() {
               {userBetSelections.map((selection) => (
                 <a
                   key={selection.id}
-                  href={`/bet-markets/${selection.betMarket.id}`}
+                  href={`/bet-markets/${selection.betSubMarket.betMarket.id}`}
                   className="block p-6 hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex justify-between items-start">
                     <div>
                       <div className="font-medium">
-                        {selection.betMarket.title}
+                        {selection.betSubMarket.betMarket.title} - {selection.betSubMarket.title}
                       </div>
                       <div className="text-sm text-gray-600 mt-1">
                         {selection.betOption.label} • Stake:{" "}
@@ -135,16 +141,16 @@ export default async function ProfilePage() {
                     </div>
                     <span
                       className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        selection.betMarket.status === "OPEN"
+                        selection.betSubMarket.status === "OPEN"
                           ? "bg-green-100 text-green-800"
-                          : selection.betMarket.status === "SETTLED"
+                          : selection.betSubMarket.status === "SETTLED"
                           ? "bg-blue-100 text-blue-800"
                           : "bg-gray-100 text-gray-800"
                       }`}
                     >
-                      {selection.betMarket.status === "OPEN"
+                      {selection.betSubMarket.status === "OPEN"
                         ? "Åben"
-                        : selection.betMarket.status === "SETTLED"
+                        : selection.betSubMarket.status === "SETTLED"
                         ? "Afgjort"
                         : "Lukket"}
                     </span>

@@ -55,15 +55,25 @@ export async function GET(
                 name: true,
               },
             },
-            betOptions: true,
-            settlement: {
+            betSubMarkets: {
               include: {
-                winningOption: true,
+                betOptions: {
+                  include: {
+                    _count: {
+                      select: {
+                        betSelections: true,
+                      },
+                    },
+                  },
+                },
+                settlement: {
+                  include: {
+                    winningOption: true,
+                  },
+                },
               },
-            },
-            _count: {
-              select: {
-                betSelections: true,
+              orderBy: {
+                createdAt: "desc",
               },
             },
           },

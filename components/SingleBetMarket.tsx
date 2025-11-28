@@ -13,7 +13,7 @@ interface BetOption {
   }
 }
 
-interface BetMarket {
+interface BetSubMarket {
   id: string
   title: string
   description?: string | null
@@ -26,6 +26,15 @@ interface BetMarket {
     }
     winningOptionId: string
   } | null
+}
+
+interface BetMarket {
+  id: string
+  title: string
+  description?: string | null
+  status: string
+  closesAt: Date
+  betSubMarkets: BetSubMarket[]
 }
 
 interface SingleBetMarketProps {
@@ -51,7 +60,7 @@ export default function SingleBetMarket({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            betMarketId: selection.betMarketId,
+            betSubMarketId: selection.betSubMarketId,
             betOptionId: selection.betOptionId,
             stakePoints: selection.stakePoints,
           }),
@@ -72,9 +81,11 @@ export default function SingleBetMarket({
     }
   }
 
+  const isOpen = betMarket.status === "OPEN" && new Date() < new Date(betMarket.closesAt)
+
   return (
     <>
-      <BetMarketCard betMarket={betMarket} isOpen={betMarket.status === "OPEN" && new Date() < new Date(betMarket.closesAt)} />
+      <BetMarketCard betMarket={betMarket} isOpen={isOpen} isAdmin={false} />
       <BetSlip userPoints={userPoints} onPlaceBets={handlePlaceBets} />
     </>
   )

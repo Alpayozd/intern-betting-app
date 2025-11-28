@@ -45,10 +45,17 @@ export default async function Home() {
           name: true,
         },
       },
-      betOptions: true,
-      settlement: {
+      betSubMarkets: {
         include: {
-          winningOption: true,
+          settlement: {
+            include: {
+              winningOption: true,
+            },
+          },
+        },
+        take: 1,
+        orderBy: {
+          createdAt: "desc",
         },
       },
     },

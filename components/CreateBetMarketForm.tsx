@@ -3,11 +3,6 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
-interface BetOption {
-  label: string
-  odds: number
-}
-
 export default function CreateBetMarketForm({
   groupId,
 }: {
@@ -17,28 +12,8 @@ export default function CreateBetMarketForm({
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [closesAt, setClosesAt] = useState("")
-  const [options, setOptions] = useState<BetOption[]>([
-    { label: "", odds: 1.5 },
-    { label: "", odds: 1.5 },
-  ])
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
-
-  const addOption = () => {
-    setOptions([...options, { label: "", odds: 1.5 }])
-  }
-
-  const removeOption = (index: number) => {
-    if (options.length > 2) {
-      setOptions(options.filter((_, i) => i !== index))
-    }
-  }
-
-  const updateOption = (index: number, field: keyof BetOption, value: string | number) => {
-    const newOptions = [...options]
-    newOptions[index] = { ...newOptions[index], [field]: value }
-    setOptions(newOptions)
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -47,16 +22,6 @@ export default function CreateBetMarketForm({
     // Validering
     if (!title.trim()) {
       setError("Titel er påkrævet")
-      return
-    }
-
-    if (options.some((opt) => !opt.label.trim())) {
-      setError("Alle options skal have et label")
-      return
-    }
-
-    if (options.some((opt) => opt.odds <= 0)) {
-      setError("Alle odds skal være positive")
       return
     }
 
@@ -78,7 +43,6 @@ export default function CreateBetMarketForm({
           title,
           description,
           closesAt: new Date(closesAt).toISOString(),
-          options,
         }),
       })
 
@@ -89,7 +53,6 @@ export default function CreateBetMarketForm({
         return
       }
 
-      router.push(`/bet-markets/${data.betMarket.id}`)
       router.refresh()
     } catch (err) {
       setError("Der opstod en fejl")
@@ -159,60 +122,10 @@ export default function CreateBetMarketForm({
           />
         </div>
 
-        <div>
-          <div className="flex justify-between items-center mb-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Options *
-            </label>
-            <button
-              type="button"
-              onClick={addOption}
-              className="text-sm text-blue-600 hover:text-blue-800"
-            >
-              + Tilføj option
-            </button>
-          </div>
-          <div className="space-y-3">
-            {options.map((option, index) => (
-              <div key={index} className="flex gap-2 items-start">
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    value={option.label}
-                    onChange={(e) =>
-                      updateOption(index, "label", e.target.value)
-                    }
-                    placeholder="Label (fx: Alpay)"
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div className="w-24">
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0.01"
-                    value={option.odds}
-                    onChange={(e) =>
-                      updateOption(index, "odds", parseFloat(e.target.value) || 0)
-                    }
-                    placeholder="Odds"
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                {options.length > 2 && (
-                  <button
-                    type="button"
-                    onClick={() => removeOption(index)}
-                    className="text-red-600 hover:text-red-800 px-2"
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <p className="text-sm text-blue-800">
+            <strong>Note:</strong> Bet Markets er nu events/containere. Du kan tilføje individuelle bets inde i market'et efter oprettelse.
+          </p>
         </div>
 
         <button
