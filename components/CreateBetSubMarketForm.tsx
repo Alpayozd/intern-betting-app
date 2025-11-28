@@ -47,31 +47,43 @@ export default function CreateBetSubMarketForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Valider betMarketId
-    if (!betMarketId) {
-      alert("Fejl: BetMarket ID mangler")
+    // Valider betMarketId - tjek både undefined, null, og tom string
+    if (!betMarketId || typeof betMarketId !== 'string' || betMarketId.trim() === '') {
+      console.error("betMarketId validation failed in form:", {
+        betMarketId,
+        type: typeof betMarketId,
+        isEmpty: betMarketId?.trim() === ''
+      })
+      alert("Fejl: BetMarket ID mangler. Prøv at opdatere siden.")
       return
     }
     
     setIsSubmitting(true)
 
     try {
-      // Valider betMarketId først
-      if (!betMarketId || betMarketId.trim() === '') {
+      const trimmedBetMarketId = betMarketId.trim()
+      
+      // Final validation
+      if (!trimmedBetMarketId) {
+        console.error("betMarketId is empty after trim:", betMarketId)
         alert("Fejl: BetMarket ID mangler. Prøv at opdatere siden.")
         setIsSubmitting(false)
         return
       }
       
       const requestBody = {
-        betMarketId: betMarketId.trim(),
+        betMarketId: trimmedBetMarketId,
         title: title.trim(),
         description: description.trim() || undefined,
         closesAt: new Date(closesAt).toISOString(),
         betOptions: options.filter((opt) => opt.label.trim() !== ""),
       }
       
-      console.log("Creating bet sub market with:", requestBody)
+      console.log("Creating bet sub market with:", {
+        ...requestBody,
+        betMarketId: trimmedBetMarketId,
+        betMarketIdLength: trimmedBetMarketId.length
+      })
       
       const response = await fetch("/api/bet-sub-markets", {
         method: "POST",

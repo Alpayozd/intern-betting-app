@@ -152,7 +152,13 @@ export default function BetMarketCard({
       <div className="p-3 sm:p-4">
         {isAdmin && isOpen && betMarket.id && (
           <div className="mb-4">
-            <CreateBetSubMarketForm betMarketId={betMarket.id} />
+            {(() => {
+              // Debug: Log betMarket.id
+              if (process.env.NODE_ENV === 'development') {
+                console.log("BetMarketCard: Rendering CreateBetSubMarketForm with betMarketId:", betMarket.id)
+              }
+              return <CreateBetSubMarketForm betMarketId={betMarket.id} />
+            })()}
           </div>
         )}
 
