@@ -4,7 +4,6 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import { nanoid } from "nanoid"
-import { Prisma } from "@prisma/client"
 
 const createBetSubMarketSchema = z.object({
   betMarketId: z.string()
@@ -202,11 +201,11 @@ export async function POST(request: NextRequest) {
       })
       
       // Opret BetSubMarket med RAW SQL for at omgå Prisma Client problem
-      // Brug Prisma.sql template tag for korrekt parameter binding
-      await tx.$executeRaw(Prisma.sql`
+      // Brug $executeRawUnsafe for at sikre korrekt parameter binding
+      await tx.$executeRawUnsafe(`
         INSERT INTO "BetSubMarket" ("id", "betMarketId", "title", "description", "status", "createdByUserId", "closesAt", "createdAt")
-        VALUES (${subMarketId}, ${finalBetMarketIdValue}, ${finalTitle}, ${finalDescription}, 'OPEN', ${finalCreatedByUserId}, ${finalClosesAt}::timestamp, NOW())
-      `)
+        VALUES ($1, $2, $3, $4, 'OPEN', $5, $6, NOW())
+      `, subMarketId, finalBetMarketIdValue, finalTitle, finalDescription, finalCreatedByUserId, finalClosesAt)
       
       console.log("BetSubMarket created with id:", subMarketId, "betMarketId:", finalBetMarketIdValue)
       
@@ -214,10 +213,10 @@ export async function POST(request: NextRequest) {
       if (betOptions.length > 0) {
         for (const opt of betOptions) {
           const optionId = nanoid()
-          await tx.$executeRaw(Prisma.sql`
+          await tx.$executeRawUnsafe(`
             INSERT INTO "BetOption" ("id", "betSubMarketId", "label", "odds", "createdAt")
-            VALUES (${optionId}, ${subMarketId}, ${opt.label.trim()}, ${opt.odds}::double precision, NOW())
-          `)
+            VALUES ($1, $2, $3, $4, NOW())
+          `, optionId, subMarketId, opt.label.trim(), opt.odds)
         }
       }
       
