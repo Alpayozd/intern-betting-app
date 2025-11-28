@@ -45,6 +45,14 @@ export async function POST(request: NextRequest) {
         },
       },
     })
+    
+    console.log("BetSubMarket found:", betSubMarket ? "Yes" : "No")
+    if (betSubMarket) {
+      console.log("BetSubMarket status:", betSubMarket.status)
+      console.log("BetSubMarket closesAt:", betSubMarket.closesAt)
+      console.log("BetSubMarket allowMultipleBets:", betSubMarket.allowMultipleBets)
+      console.log("BetOptions count:", betSubMarket.betOptions.length)
+    }
 
     if (!betSubMarket) {
       return NextResponse.json(
@@ -129,31 +137,70 @@ export async function POST(request: NextRequest) {
     // Beregn potential payout
     const potentialPayoutPoints = stakePoints * betOption.odds
 
-    // Opret bet selection og opdater point saldo i en transaktion
-    await prisma.$transaction([
-      prisma.betSelection.create({
-        data: {
-          betSubMarketId,
-          betOptionId,
-          userId: session.user.id,
-          stakePoints,
-          potentialPayoutPoints,
-        },
-      }),
-      prisma.groupScore.update({
+    // Tjek om brugeren allerede har et bet på denne option (hvis allowMultipleBets er false)
+    if (!betSubMarket.allowMultipleBets) {
+      const existingBet = await prisma.betSelection.findFirst({
         where: {
-          groupId_userId: {
-            groupId: betSubMarket.betMarket.groupId,
+          betSubMarketId,
+          userId: session.user.id,
+        },
+      })
+      
+      if (existingBet) {
+        return NextResponse.json(
+          { error: "Du har allerede placeret et bet på dette market. Rediger dit eksisterende bet i stedet." },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Opret bet selection og opdater point saldo i en transaktion
+    try {
+      await prisma.$transaction([
+        prisma.betSelection.create({
+          data: {
+            betSubMarketId,
+            betOptionId,
             userId: session.user.id,
+            stakePoints,
+            potentialPayoutPoints,
           },
-        },
-        data: {
-          totalPoints: {
-            decrement: stakePoints,
+        }),
+        prisma.groupScore.update({
+          where: {
+            groupId_userId: {
+              groupId: betSubMarket.betMarket.groupId,
+              userId: session.user.id,
+            },
           },
-        },
-      }),
-    ])
+          data: {
+            totalPoints: {
+              decrement: stakePoints,
+            },
+          },
+        }),
+      ])
+    } catch (dbError: any) {
+      console.error("Database error creating bet selection:", dbError)
+      
+      // Hvis det er en unique constraint fejl
+      if (dbError.code === 'P2002') {
+        return NextResponse.json(
+          { error: "Du har allerede placeret et bet på denne option" },
+          { status: 400 }
+        )
+      }
+      
+      // Hvis det er en foreign key constraint fejl
+      if (dbError.code === 'P2003') {
+        return NextResponse.json(
+          { error: "Ugyldig bet option eller market" },
+          { status: 400 }
+        )
+      }
+      
+      throw dbError // Re-throw hvis det er en anden fejl
+    }
 
     return NextResponse.json(
       { message: "Bet placeret", potentialPayoutPoints },
