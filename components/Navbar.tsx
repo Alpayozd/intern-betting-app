@@ -14,7 +14,7 @@ export default function Navbar() {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="text-lg sm:text-xl font-bold">
-              🎲 Intern Betting
+              🎲 Bet with Friends
             </Link>
             {status === "authenticated" && (
               <div className="hidden md:flex items-center space-x-6 ml-8">

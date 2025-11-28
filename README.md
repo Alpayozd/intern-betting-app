@@ -1,4 +1,4 @@
-# 🎲 Intern Betting App
+# 🎲 Bet with Friends
 
 En moderne webapp hvor grupper af venner kan lave interne bets/odds inspireret af Bet365, men **KUN med point og for sjov** – ingen rigtige penge, ingen betalinger, ingen integration til betalingsgateways.
 

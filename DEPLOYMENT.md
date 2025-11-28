@@ -1,4 +1,4 @@
-# Deployment Guide - Intern Betting App
+# Deployment Guide - Bet with Friends
 
 Denne guide forklarer hvordan du deployer appen online.
 
