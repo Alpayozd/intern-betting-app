@@ -295,7 +295,7 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
                 totalStake > userPoints ||
                 selections.length === 0
               }
-              className="w-full bg-green-600 text-white py-2.5 px-4 rounded-lg font-semibold text-sm hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-green-600 text-white py-4 sm:py-2.5 px-4 rounded-lg font-semibold text-base sm:text-sm hover:bg-green-700 active:bg-green-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[56px] sm:min-h-[auto] touch-manipulation"
             >
               {isPlacing
                 ? "Placerer bets..."
