@@ -148,25 +148,42 @@ export async function POST(request: NextRequest) {
     
     // Opret BetSubMarket med options i en transaktion
     const betSubMarket = await prisma.$transaction(async (tx) => {
-      // Double-check igen inde i transaktionen
-      if (!trimmedBetMarketId) {
+      // Final validation inde i transaktionen
+      const finalBetMarketId = String(trimmedBetMarketId).trim()
+      
+      if (!finalBetMarketId || finalBetMarketId.length === 0) {
+        console.error("CRITICAL: betMarketId is empty in transaction:", {
+          original: betMarketId,
+          trimmed: trimmedBetMarketId,
+          final: finalBetMarketId
+        })
         throw new Error("betMarketId is missing in transaction")
       }
       
-      const subMarket = await tx.betSubMarket.create({
-        data: {
-          betMarketId: trimmedBetMarketId, // Sikrer at vi sender en string, ikke null
-          title: title.trim(),
-          description: description?.trim() || null,
-          closesAt: new Date(closesAt),
-          createdByUserId: session.user.id,
-          betOptions: {
-            create: betOptions.map((opt) => ({
-              label: opt.label.trim(),
-              odds: opt.odds,
-            })),
-          },
+      // Log data objektet før Prisma create
+      const prismaData = {
+        betMarketId: finalBetMarketId,
+        title: title.trim(),
+        description: description?.trim() || null,
+        closesAt: new Date(closesAt),
+        createdByUserId: session.user.id,
+        betOptions: {
+          create: betOptions.map((opt) => ({
+            label: opt.label.trim(),
+            odds: opt.odds,
+          })),
         },
+      }
+      
+      console.log("Prisma create data:", {
+        ...prismaData,
+        betMarketId: prismaData.betMarketId,
+        betMarketIdType: typeof prismaData.betMarketId,
+        betMarketIdLength: prismaData.betMarketId.length
+      })
+      
+      const subMarket = await tx.betSubMarket.create({
+        data: prismaData,
         include: {
           betOptions: true,
         },
