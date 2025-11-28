@@ -147,6 +147,13 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
   )
 
   const handlePlaceBets = async () => {
+    // Valider at alle selections har en gyldig stake
+    const invalidSelections = selections.filter(s => !s.stakePoints || s.stakePoints <= 0)
+    if (invalidSelections.length > 0) {
+      alert("Alle bets skal have en stake større end 0")
+      return
+    }
+
     if (totalStake > userPoints) {
       alert(`Du har kun ${userPoints} points tilgængelige`)
       return
@@ -157,13 +164,19 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
       return
     }
 
+    if (totalStake === 0) {
+      alert("Total stake skal være større end 0")
+      return
+    }
+
     setIsPlacing(true)
     try {
       await onPlaceBets(selections)
       setSelections([])
       setIsOpen(false)
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error placing bets:", error)
+      alert(error?.message || "Der opstod en fejl ved placering af bets")
     } finally {
       setIsPlacing(false)
     }
@@ -285,9 +298,9 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
                           }
                         }}
                         onBlur={(e) => {
-                          // Hvis feltet er tomt når det mister fokus, sæt til 0
-                          if (e.target.value === '') {
-                            updateStake(index, '0')
+                          // Hvis feltet er tomt når det mister fokus, sæt til 10 (minimum stake)
+                          if (e.target.value === '' || e.target.value === '0') {
+                            updateStake(index, '10')
                           }
                         }}
                         className="w-24 sm:w-20 px-3 py-2.5 sm:px-2 sm:py-1 border border-gray-300 rounded text-base sm:text-xs min-h-[44px] sm:min-h-[auto] touch-manipulation"
