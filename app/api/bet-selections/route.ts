@@ -19,8 +19,19 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
+    
+    // Log request body for debugging
+    console.log("Bet selection request body:", JSON.stringify(body))
+    
+    // Sikrer at stakePoints er et number
+    if (typeof body.stakePoints === 'string') {
+      body.stakePoints = parseInt(body.stakePoints, 10)
+    }
+    
     const { betSubMarketId, betOptionId, stakePoints } =
       createBetSelectionSchema.parse(body)
+    
+    console.log("Parsed data:", { betSubMarketId, betOptionId, stakePoints, stakePointsType: typeof stakePoints })
 
     // Hent bet sub market og valider
     const betSubMarket = await prisma.betSubMarket.findUnique({
@@ -150,15 +161,27 @@ export async function POST(request: NextRequest) {
     )
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error("Zod validation error:", error.errors)
       return NextResponse.json(
-        { error: error.errors[0].message },
+        { error: error.errors[0].message, details: error.errors },
         { status: 400 }
       )
     }
 
     console.error("Create bet selection error:", error)
+    
+    // Returner mere detaljeret fejlbesked i development
+    const errorMessage = error instanceof Error 
+      ? error.message 
+      : "Der opstod en fejl"
+    
     return NextResponse.json(
-      { error: "Der opstod en fejl" },
+      { 
+        error: errorMessage,
+        ...(process.env.NODE_ENV === 'development' && { 
+          stack: error instanceof Error ? error.stack : undefined 
+        })
+      },
       { status: 500 }
     )
   }

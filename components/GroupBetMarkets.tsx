@@ -68,7 +68,7 @@ export default function GroupBetMarkets({
           body: JSON.stringify({
             betSubMarketId: selection.betSubMarketId,
             betOptionId: selection.betOptionId,
-            stakePoints: selection.stakePoints,
+            stakePoints: Number(selection.stakePoints), // Sikrer at det er et number
           }),
         })
 
