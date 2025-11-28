@@ -27,16 +27,37 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     
-    // Valider at betMarketId er til stede
-    if (!body.betMarketId || typeof body.betMarketId !== 'string') {
+    // Log hele request body for debugging
+    console.log("Received request body:", JSON.stringify(body, null, 2))
+    console.log("betMarketId type:", typeof body.betMarketId)
+    console.log("betMarketId value:", body.betMarketId)
+    
+    // Valider at betMarketId er til stede og ikke null/undefined/empty
+    if (!body.betMarketId || typeof body.betMarketId !== 'string' || body.betMarketId.trim() === '') {
+      console.error("betMarketId validation failed:", {
+        exists: !!body.betMarketId,
+        type: typeof body.betMarketId,
+        value: body.betMarketId
+      })
+      return NextResponse.json(
+        { error: "betMarketId er påkrævet og må ikke være tom" },
+        { status: 400 }
+      )
+    }
+    
+    const parsed = createBetSubMarketSchema.parse(body)
+    const { betMarketId, title, description, closesAt, betOptions } = parsed
+    
+    // Double-check efter Zod parsing
+    if (!betMarketId || betMarketId.trim() === '') {
+      console.error("betMarketId is empty after Zod parsing:", betMarketId)
       return NextResponse.json(
         { error: "betMarketId er påkrævet" },
         { status: 400 }
       )
     }
     
-    const { betMarketId, title, description, closesAt, betOptions } =
-      createBetSubMarketSchema.parse(body)
+    console.log("After Zod parsing - betMarketId:", betMarketId)
 
     // Hent bet market og valider
     const betMarket = await prisma.betMarket.findUnique({
@@ -69,22 +90,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Valider betMarketId igen før oprettelse
-    if (!betMarketId || betMarketId.trim() === '') {
-      console.error("betMarketId is missing or empty:", betMarketId)
+    // Final validation før Prisma oprettelse
+    const trimmedBetMarketId = betMarketId.trim()
+    if (!trimmedBetMarketId) {
+      console.error("betMarketId is empty after trim:", betMarketId)
       return NextResponse.json(
         { error: "betMarketId er påkrævet og må ikke være tom" },
         { status: 400 }
       )
     }
     
-    console.log("Creating BetSubMarket with betMarketId:", betMarketId)
+    console.log("Creating BetSubMarket with betMarketId:", trimmedBetMarketId)
+    console.log("Full data object:", {
+      betMarketId: trimmedBetMarketId,
+      title: title.trim(),
+      createdByUserId: session.user.id,
+      closesAt: new Date(closesAt),
+    })
     
     // Opret BetSubMarket med options i en transaktion
     const betSubMarket = await prisma.$transaction(async (tx) => {
       const subMarket = await tx.betSubMarket.create({
         data: {
-          betMarketId: betMarketId.trim(),
+          betMarketId: trimmedBetMarketId,
           title: title.trim(),
           description: description?.trim() || null,
           closesAt: new Date(closesAt),
