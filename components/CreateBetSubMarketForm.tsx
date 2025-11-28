@@ -71,26 +71,48 @@ export default function CreateBetSubMarketForm({
         return
       }
       
+      // Sikrer at betMarketId er en gyldig string
+      if (!trimmedBetMarketId || trimmedBetMarketId.length === 0) {
+        throw new Error("betMarketId er påkrævet")
+      }
+      
       const requestBody = {
-        betMarketId: trimmedBetMarketId,
+        betMarketId: String(trimmedBetMarketId), // Eksplicit konvertering til string
         title: title.trim(),
         description: description.trim() || undefined,
         closesAt: new Date(closesAt).toISOString(),
         betOptions: options.filter((opt) => opt.label.trim() !== ""),
       }
       
+      // Valider request body før sending
+      if (!requestBody.betMarketId || requestBody.betMarketId.trim() === '') {
+        throw new Error("betMarketId er påkrævet i request body")
+      }
+      
       console.log("Creating bet sub market with:", {
         ...requestBody,
-        betMarketId: trimmedBetMarketId,
-        betMarketIdLength: trimmedBetMarketId.length
+        betMarketId: requestBody.betMarketId,
+        betMarketIdType: typeof requestBody.betMarketId,
+        betMarketIdLength: requestBody.betMarketId.length
       })
+      
+      // Serialiser og valider JSON
+      const jsonBody = JSON.stringify(requestBody)
+      const parsedBack = JSON.parse(jsonBody)
+      
+      if (!parsedBack.betMarketId || parsedBack.betMarketId.trim() === '') {
+        throw new Error("betMarketId mangler efter JSON serialisering")
+      }
+      
+      console.log("JSON body:", jsonBody)
+      console.log("Parsed back:", parsedBack)
       
       const response = await fetch("/api/bet-sub-markets", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(requestBody),
+        body: jsonBody,
       })
 
       if (!response.ok) {
