@@ -5,7 +5,11 @@ import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
 const createBetSubMarketSchema = z.object({
-  betMarketId: z.string().min(1),
+  betMarketId: z.string()
+    .min(1, "betMarketId er påkrævet")
+    .refine((val) => val !== null && val !== undefined && val.trim() !== '', {
+      message: "betMarketId må ikke være null, undefined eller tom"
+    }),
   title: z.string().min(1, "Titel er påkrævet"),
   description: z.string().optional(),
   closesAt: z.string().datetime(),
