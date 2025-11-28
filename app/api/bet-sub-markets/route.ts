@@ -112,11 +112,29 @@ export async function POST(request: NextRequest) {
       closesAt: new Date(closesAt),
     })
     
+    // Final null check før Prisma
+    if (!trimmedBetMarketId || trimmedBetMarketId === null || trimmedBetMarketId === undefined) {
+      console.error("CRITICAL: betMarketId is null/undefined before Prisma create:", {
+        original: betMarketId,
+        trimmed: trimmedBetMarketId,
+        type: typeof trimmedBetMarketId
+      })
+      return NextResponse.json(
+        { error: "betMarketId er påkrævet" },
+        { status: 400 }
+      )
+    }
+    
     // Opret BetSubMarket med options i en transaktion
     const betSubMarket = await prisma.$transaction(async (tx) => {
+      // Double-check igen inde i transaktionen
+      if (!trimmedBetMarketId) {
+        throw new Error("betMarketId is missing in transaction")
+      }
+      
       const subMarket = await tx.betSubMarket.create({
         data: {
-          betMarketId: trimmedBetMarketId,
+          betMarketId: trimmedBetMarketId, // Sikrer at vi sender en string, ikke null
           title: title.trim(),
           description: description?.trim() || null,
           closesAt: new Date(closesAt),
