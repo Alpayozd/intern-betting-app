@@ -44,6 +44,18 @@ export async function POST(request: NextRequest) {
           },
         },
       },
+      select: {
+        id: true,
+        status: true,
+        closesAt: true,
+        allowMultipleBets: true,
+        betOptions: true,
+        betMarket: {
+          include: {
+            group: true,
+          },
+        },
+      },
     })
     
     console.log("BetSubMarket found:", betSubMarket ? "Yes" : "No")
