@@ -6,10 +6,14 @@ import { z } from "zod"
 
 const createBetSubMarketSchema = z.object({
   betMarketId: z.string()
-    .min(1, "betMarketId er påkrævet")
-    .refine((val) => val !== null && val !== undefined && val.trim() !== '', {
+    .nonempty("betMarketId er påkrævet")
+    .refine((val) => {
+      const trimmed = val?.trim()
+      return trimmed !== null && trimmed !== undefined && trimmed !== ''
+    }, {
       message: "betMarketId må ikke være null, undefined eller tom"
-    }),
+    })
+    .transform((val) => val.trim()), // Transform til trimmed version
   title: z.string().min(1, "Titel er påkrævet"),
   description: z.string().optional(),
   closesAt: z.string().datetime(),
@@ -49,19 +53,36 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    const parsed = createBetSubMarketSchema.parse(body)
+    let parsed
+    try {
+      parsed = createBetSubMarketSchema.parse(body)
+    } catch (zodError) {
+      if (zodError instanceof z.ZodError) {
+        console.error("Zod validation error:", zodError.errors)
+        return NextResponse.json(
+          { error: zodError.errors[0].message, details: zodError.errors },
+          { status: 400 }
+        )
+      }
+      throw zodError
+    }
+    
     const { betMarketId, title, description, closesAt, betOptions } = parsed
     
-    // Double-check efter Zod parsing
-    if (!betMarketId || betMarketId.trim() === '') {
-      console.error("betMarketId is empty after Zod parsing:", betMarketId)
+    // Double-check efter Zod parsing - betMarketId skal være en non-empty string
+    if (!betMarketId || typeof betMarketId !== 'string' || betMarketId.trim() === '') {
+      console.error("betMarketId validation failed after Zod parsing:", {
+        betMarketId,
+        type: typeof betMarketId,
+        isEmpty: betMarketId?.trim() === ''
+      })
       return NextResponse.json(
-        { error: "betMarketId er påkrævet" },
+        { error: "betMarketId er påkrævet og må ikke være tom" },
         { status: 400 }
       )
     }
     
-    console.log("After Zod parsing - betMarketId:", betMarketId)
+    console.log("After Zod parsing - betMarketId:", betMarketId, "type:", typeof betMarketId)
 
     // Hent bet market og valider
     const betMarket = await prisma.betMarket.findUnique({
