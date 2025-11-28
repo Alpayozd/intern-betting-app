@@ -12,7 +12,10 @@ const signupSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, email, password } = signupSchema.parse(body)
+    const { name, email: rawEmail, password } = signupSchema.parse(body)
+    
+    // Normaliser email (trim og lowercase)
+    const email = rawEmail.trim().toLowerCase()
 
     // Tjek om brugeren allerede findes
     const existingUser = await prisma.user.findUnique({
@@ -47,7 +50,7 @@ export async function POST(request: NextRequest) {
       { message: "Bruger oprettet", user },
       { status: 201 }
     )
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: error.errors[0].message },
@@ -56,8 +59,13 @@ export async function POST(request: NextRequest) {
     }
 
     console.error("Signup error:", error)
+    // Return mere detaljeret fejl i development
+    const errorMessage = process.env.NODE_ENV === "development" 
+      ? error?.message || "Der opstod en fejl"
+      : "Der opstod en fejl"
+    
     return NextResponse.json(
-      { error: "Der opstod en fejl" },
+      { error: errorMessage, details: process.env.NODE_ENV === "development" ? error : undefined },
       { status: 500 }
     )
   }
