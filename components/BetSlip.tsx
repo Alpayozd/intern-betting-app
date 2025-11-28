@@ -119,6 +119,15 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
     }
   }, [isOpen])
 
+  // Tillad scrolling på baggrunden når BetSlip er åbent
+  useEffect(() => {
+    // Fjern body overflow lock - tillad scrolling
+    document.body.style.overflow = 'auto'
+    return () => {
+      document.body.style.overflow = 'auto'
+    }
+  }, [isOpen])
+
   const removeSelection = (index: number) => {
     setSelections((prev) => prev.filter((_, i) => i !== index))
   }
@@ -209,7 +218,7 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
       )}
       <div
         data-bet-slip
-        className={`fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 shadow-2xl z-[10000] transition-transform duration-300 max-h-[85vh] sm:max-h-[50vh] ${
+        className={`fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-300 shadow-2xl z-[10000] transition-transform duration-300 ${
           isOpen ? "translate-y-0" : "translate-y-full pointer-events-none"
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -218,26 +227,28 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
           bottom: 0,
           left: 0,
           right: 0,
-          zIndex: 10000
+          zIndex: 10000,
+          maxHeight: selections.length > 0 ? '40vh' : '30vh',
+          display: 'flex',
+          flexDirection: 'column'
         }}
       >
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-blue-600 text-white px-4 py-3 flex justify-between items-center min-h-[56px]">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <h2 className="text-lg sm:text-xl font-bold">Bet Slip</h2>
-            <span className="bg-blue-700 px-2.5 py-1 rounded-full text-xs font-bold">
-              {selections.length} bet{selections.length !== 1 ? "s" : ""}
+        {/* Header - Fixed */}
+        <div className="bg-blue-600 text-white px-3 py-2 flex justify-between items-center flex-shrink-0 border-b border-blue-700">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-bold">Bet Slip</h2>
+            <span className="bg-blue-700 px-2 py-0.5 rounded-full text-xs font-bold">
+              {selections.length}
             </span>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="text-sm sm:text-base">
+          <div className="flex items-center gap-2">
+            <div className="text-xs">
               <span className="opacity-80">Points:</span>{" "}
               <span className="font-bold">{formatNumber(userPoints)}</span>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-white hover:text-gray-200 active:text-gray-300 text-2xl font-bold w-10 h-10 flex items-center justify-center touch-manipulation"
+              className="text-white hover:text-gray-200 active:text-gray-300 text-lg font-bold w-8 h-8 flex items-center justify-center touch-manipulation"
               title="Minimer"
               aria-label="Luk bet slip"
             >
@@ -246,69 +257,65 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
           </div>
         </div>
 
-        {/* Content */}
-        <div className="overflow-y-auto max-h-[calc(85vh-140px)] sm:max-h-[calc(50vh-120px)]">
+        {/* Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto overscroll-contain" style={{ maxHeight: 'calc(40vh - 120px)' }}>
           {selections.length === 0 ? (
-            <div className="p-4 text-center text-gray-500">
-              <p className="text-sm mb-1">Ingen bets i slip'en</p>
-              <p className="text-xs">
+            <div className="p-3 text-center text-gray-500">
+              <p className="text-xs">Ingen bets i slip'en</p>
+              <p className="text-xs mt-1 opacity-75">
                 Vælg en option fra bet markets ovenfor
               </p>
             </div>
           ) : (
-            <div className="divide-y">
+            <div className="divide-y divide-gray-200">
               {selections.map((selection, index) => (
-                <div key={`${selection.betSubMarketId}-${selection.betOptionId}-${index}`} className="p-2 sm:p-3 hover:bg-gray-50">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex-1 min-w-0 pr-2">
-                      <p className="font-semibold text-xs text-gray-900 truncate">
+                <div key={`${selection.betSubMarketId}-${selection.betOptionId}-${index}`} className="p-2 hover:bg-gray-50">
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-xs text-gray-900 line-clamp-1">
                         {selection.betMarketTitle}
                       </p>
-                      <p className="text-xs text-gray-600 mt-1">
+                      <p className="text-xs text-gray-600 mt-0.5">
                         {selection.betOptionLabel} @ {selection.odds.toFixed(2)}
                       </p>
                     </div>
                     <button
                       onClick={() => removeSelection(index)}
-                      className="text-red-600 hover:text-red-800 active:text-red-900 ml-2 text-2xl font-bold flex-shrink-0 w-10 h-10 flex items-center justify-center touch-manipulation"
+                      className="text-red-600 hover:text-red-800 active:text-red-900 text-xl font-bold flex-shrink-0 w-7 h-7 flex items-center justify-center touch-manipulation"
                       title="Fjern"
                       aria-label="Fjern bet"
                     >
                       ×
                     </button>
                   </div>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mt-2">
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                      <label className="text-xs text-gray-700">Stake:</label>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        min="1"
-                        max={userPoints}
-                        value={selection.stakePoints || ''}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                          const value: string = e.target.value.replace(/[^0-9]/g, '')
-                          updateStake(index, value)
-                        }}
-                        onFocus={(e) => {
-                          // Når feltet får fokus og værdien er 0, clear det
-                          if (e.target.value === '0') {
-                            e.target.value = ''
-                          }
-                        }}
-                        onBlur={(e) => {
-                          // Hvis feltet er tomt når det mister fokus, sæt til 10 (minimum stake)
-                          if (e.target.value === '' || e.target.value === '0') {
-                            updateStake(index, '10')
-                          }
-                        }}
-                        className="w-24 sm:w-20 px-3 py-2.5 sm:px-2 sm:py-1 border border-gray-300 rounded text-base sm:text-xs min-h-[44px] sm:min-h-[auto] touch-manipulation"
-                      />
-                      <span className="text-xs text-gray-600">pts</span>
-                    </div>
-                    <span className="text-xs font-semibold text-blue-600 sm:ml-auto">
-                      Gevinst: {selection.potentialPayout.toFixed(0)} pts
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <label className="text-xs text-gray-700 whitespace-nowrap">Stake:</label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      min="1"
+                      max={userPoints}
+                      value={selection.stakePoints || ''}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        const value: string = e.target.value.replace(/[^0-9]/g, '')
+                        updateStake(index, value)
+                      }}
+                      onFocus={(e) => {
+                        if (e.target.value === '0') {
+                          e.target.value = ''
+                        }
+                      }}
+                      onBlur={(e) => {
+                        if (e.target.value === '' || e.target.value === '0') {
+                          updateStake(index, '10')
+                        }
+                      }}
+                      className="w-16 px-2 py-1 border border-gray-300 rounded text-xs min-h-[32px] touch-manipulation"
+                    />
+                    <span className="text-xs text-gray-600">pts</span>
+                    <span className="text-xs font-semibold text-blue-600 ml-auto">
+                      {selection.potentialPayout.toFixed(0)} pts
                     </span>
                   </div>
                 </div>
@@ -317,19 +324,19 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
           )}
         </div>
 
-        {/* Footer */}
+        {/* Footer - Fixed */}
         {selections.length > 0 && (
-          <div className="bg-gray-50 border-t px-3 sm:px-4 py-3">
-            <div className="flex justify-between items-center mb-3">
+          <div className="bg-gray-50 border-t border-gray-300 px-3 py-2 flex-shrink-0">
+            <div className="flex justify-between items-center mb-2">
               <div>
                 <p className="text-xs text-gray-600">Total Stake</p>
-                <p className="text-base sm:text-lg font-bold text-gray-900">
+                <p className="text-sm font-bold text-gray-900">
                   {formatNumber(totalStake)} pts
                 </p>
               </div>
               <div className="text-right">
                 <p className="text-xs text-gray-600">Potentiel Gevinst</p>
-                <p className="text-base sm:text-lg font-bold text-green-600">
+                <p className="text-sm font-bold text-green-600">
                   {totalPotentialPayout.toFixed(0)} pts
                 </p>
               </div>
@@ -343,21 +350,20 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
                 selections.length === 0 ||
                 selections.some(s => !s.stakePoints || s.stakePoints <= 0)
               }
-              className="w-full bg-green-600 text-white py-4 sm:py-2.5 px-4 rounded-lg font-semibold text-base sm:text-sm hover:bg-green-700 active:bg-green-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[56px] sm:min-h-[auto] touch-manipulation"
+              className="w-full bg-green-600 text-white py-2.5 px-3 rounded-lg font-semibold text-sm hover:bg-green-700 active:bg-green-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] touch-manipulation"
             >
               {isPlacing
-                ? "Placerer bets..."
+                ? "Placerer..."
                 : `Placér ${selections.length} bet${selections.length !== 1 ? "s" : ""} (${formatNumber(totalStake)} pts)`}
             </button>
             {totalStake > userPoints && (
-              <p className="text-red-600 text-xs mt-2 text-center">
+              <p className="text-red-600 text-xs mt-1 text-center">
                 Utilstrækkelige points
               </p>
             )}
           </div>
         )}
       </div>
-    </div>
     </>
   )
 }
