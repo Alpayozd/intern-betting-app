@@ -178,6 +178,7 @@ export default async function GroupDetailPage({
                     description: sm.description,
                     status: sm.status,
                     closesAt: sm.closesAt,
+                    allowMultipleBets: sm.allowMultipleBets,
                     betOptions: sm.betOptions,
                     settlement: sm.settlement,
                   })),

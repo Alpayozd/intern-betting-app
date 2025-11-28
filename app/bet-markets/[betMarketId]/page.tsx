@@ -174,6 +174,7 @@ export default async function BetMarketDetailPage({
                   description: sm.description,
                   status: sm.status,
                   closesAt: sm.closesAt,
+                  allowMultipleBets: sm.allowMultipleBets,
                   betOptions: sm.betOptions.map((opt) => ({
                     id: opt.id,
                     label: opt.label,
