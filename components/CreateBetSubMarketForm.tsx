@@ -81,6 +81,7 @@ export default function CreateBetSubMarketForm({
         title: title.trim(),
         description: description.trim() || undefined,
         closesAt: new Date(closesAt).toISOString(),
+        allowMultipleBets: allowMultipleBets,
         betOptions: options.filter((opt) => opt.label.trim() !== ""),
       }
       
@@ -181,19 +182,33 @@ export default function CreateBetSubMarketForm({
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Lukker *
           </label>
-          <input
-            type="datetime-local"
-            value={closesAt}
-            onChange={(e) => setClosesAt(e.target.value)}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+              <input
+                type="datetime-local"
+                value={closesAt}
+                onChange={(e) => setClosesAt(e.target.value)}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Options *
-          </label>
+            <div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={allowMultipleBets}
+                  onChange={(e) => setAllowMultipleBets(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <span className="text-sm font-medium text-gray-700">
+                  Tillad flere bets per option (spillere kan bette på flere options)
+                </span>
+              </label>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Options *
+              </label>
           {options.map((option, index) => (
             <div key={index} className="flex gap-2 mb-2">
               <input

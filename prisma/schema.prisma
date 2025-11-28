@@ -92,6 +92,7 @@ model BetSubMarket {
   status          BetMarketStatus @default(OPEN)
   createdByUserId String
   closesAt        DateTime
+  allowMultipleBets Boolean     @default(false) // Tillad flere bets per option
   createdAt       DateTime      @default(now())
 
   betMarket       BetMarket        @relation(fields: [betMarketId], references: [id], onDelete: Cascade)

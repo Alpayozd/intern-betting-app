@@ -18,6 +18,7 @@ const createBetSubMarketSchema = z.object({
   title: z.string().min(1, "Titel er påkrævet"),
   description: z.string().optional(),
   closesAt: z.string().datetime(),
+  allowMultipleBets: z.boolean().optional().default(false),
   betOptions: z.array(
     z.object({
       label: z.string().min(1),
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest) {
       throw zodError
     }
     
-    const { betMarketId, title, description, closesAt, betOptions } = parsed
+    const { betMarketId, title, description, closesAt, allowMultipleBets, betOptions } = parsed
     
     // Double-check efter Zod parsing - betMarketId skal være en non-empty string
     if (!betMarketId || typeof betMarketId !== 'string' || betMarketId.trim() === '') {
@@ -201,6 +202,7 @@ export async function POST(request: NextRequest) {
           status: "OPEN",
           createdByUserId: finalCreatedByUserId,
           closesAt: finalClosesAt,
+          allowMultipleBets: allowMultipleBets ?? false,
           // createdAt har @default(now()) så vi behøver ikke sende det
         },
       })

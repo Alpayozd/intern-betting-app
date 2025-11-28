@@ -12,6 +12,7 @@ interface BetSelection {
   odds: number
   stakePoints: number
   potentialPayout: number
+  allowMultipleBets?: boolean // Om flere bets er tilladt for dette BetSubMarket
 }
 
 interface BetSlipProps {
@@ -42,7 +43,29 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
           (s) => s.betSubMarketId === newSelection.betSubMarketId
         )
         
-        // Hvis der allerede er en bet fra samme sub market
+        // Hvis flere bets er tilladt (allowMultipleBets = true)
+        if (newSelection.allowMultipleBets) {
+          // Tjek om den samme option allerede findes
+          const sameOption = prev.find(
+            (s) =>
+              s.betSubMarketId === newSelection.betSubMarketId &&
+              s.betOptionId === newSelection.betOptionId
+          )
+          
+          // Hvis samme option, fjern den (toggle off)
+          if (sameOption) {
+            return prev.filter(
+              (s) =>
+                !(s.betSubMarketId === newSelection.betSubMarketId &&
+                  s.betOptionId === newSelection.betOptionId)
+            )
+          }
+          
+          // Tilføj den nye selection (tillader flere options fra samme market)
+          return [...prev, newSelection]
+        }
+        
+        // Hvis flere bets IKKE er tilladt (standard opførsel)
         if (existingFromSameSubMarket) {
           // Hvis det er den samme option, fjern den (toggle off)
           if (existingFromSameSubMarket.betOptionId === newSelection.betOptionId) {

@@ -19,6 +19,7 @@ interface BetSubMarket {
   description?: string | null
   status: string
   closesAt: Date
+  allowMultipleBets?: boolean
   betOptions: BetOption[]
   settlement?: {
     winningOption: {

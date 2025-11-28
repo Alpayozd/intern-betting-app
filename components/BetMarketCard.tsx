@@ -19,6 +19,7 @@ interface BetSubMarket {
   description?: string | null
   status: string
   closesAt: Date
+  allowMultipleBets?: boolean
   betOptions: BetOption[]
   settlement?: {
     winningOption: {
@@ -101,6 +102,7 @@ export default function BetMarketCard({
         odds: option.odds,
         stakePoints: 10, // Default stake
         potentialPayout: 10 * option.odds,
+        allowMultipleBets: subMarket.allowMultipleBets || false,
       },
     })
     window.dispatchEvent(event)
@@ -237,8 +239,10 @@ export default function BetMarketCard({
                     {subMarket.betOptions.map((option) => {
                       const isWinner =
                         subMarket.settlement?.winningOptionId === option.id
-                      // Kun én valgt option per sub market
-                      const isSelected = selectedOptionId === option.id
+                      // Hvis flere bets er tilladt, vis alle valgte options, ellers kun én
+                      const isSelected = subMarket.allowMultipleBets
+                        ? selectedOptionIds.has(option.id)
+                        : selectedOptionId === option.id
 
                       return (
                         <button
