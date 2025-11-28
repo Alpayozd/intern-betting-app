@@ -25,6 +25,11 @@ interface BetMarket {
   } | null
 }
 
+interface BetSelection {
+  betMarketId: string
+  betOptionId: string
+}
+
 interface BetMarketCardProps {
   betMarket: BetMarket
   isOpen: boolean
@@ -88,11 +93,6 @@ export default function BetMarketCard({
       }
       return newSet
     })
-  }
-
-  interface BetSelection {
-    betMarketId: string
-    betOptionId: string
   }
 
   const isSettled = betMarket.status === "SETTLED"
