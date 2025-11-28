@@ -72,7 +72,11 @@ export default async function GroupDetailPage({
               },
               settlement: {
                 include: {
-                  winningOption: true,
+                  winningOptions: {
+                    include: {
+                      betOption: true,
+                    },
+                  },
                 },
               },
             },

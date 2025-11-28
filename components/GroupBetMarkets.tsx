@@ -22,10 +22,12 @@ interface BetSubMarket {
   allowMultipleBets?: boolean
   betOptions: BetOption[]
   settlement?: {
-    winningOption: {
-      label: string
-    }
-    winningOptionId: string
+    winningOptions: {
+      betOption: {
+        id: string
+        label: string
+      }
+    }[]
   } | null
 }
 

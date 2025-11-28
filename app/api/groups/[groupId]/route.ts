@@ -68,7 +68,11 @@ export async function GET(
                 },
                 settlement: {
                   include: {
-                    winningOption: true,
+                    winningOptions: {
+                      include: {
+                        betOption: true,
+                      },
+                    },
                   },
                 },
               },

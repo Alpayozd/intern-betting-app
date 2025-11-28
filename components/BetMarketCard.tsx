@@ -22,10 +22,12 @@ interface BetSubMarket {
   allowMultipleBets?: boolean
   betOptions: BetOption[]
   settlement?: {
-    winningOption: {
-      label: string
-    }
-    winningOptionId: string
+    winningOptions: {
+      betOption: {
+        id: string
+        label: string
+      }
+    }[]
   } | null
 }
 
@@ -219,9 +221,9 @@ export default function BetMarketCard({
                         Lukker: {new Date(subMarket.closesAt).toLocaleString("da-DK")}
                       </p>
                     )}
-                    {subMarket.settlement && (
+                    {subMarket.settlement && subMarket.settlement.winningOptions.length > 0 && (
                       <p className="text-xs text-green-700 mt-1 font-medium">
-                        Vinder: {subMarket.settlement.winningOption.label}
+                        Vinder(e): {subMarket.settlement.winningOptions.map(wo => wo.betOption.label).join(", ")}
                       </p>
                     )}
                   </div>
@@ -238,7 +240,7 @@ export default function BetMarketCard({
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                     {subMarket.betOptions.map((option) => {
                       const isWinner =
-                        subMarket.settlement?.winningOptionId === option.id
+                        subMarket.settlement?.winningOptions.some(wo => wo.betOption.id === option.id) || false
                       // Hvis flere bets er tilladt, vis alle valgte options, ellers kun én
                       const isSelected = subMarket.allowMultipleBets
                         ? selectedOptionIds.has(option.id)

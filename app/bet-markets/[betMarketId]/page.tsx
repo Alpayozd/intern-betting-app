@@ -46,7 +46,11 @@ export default async function BetMarketDetailPage({
           },
           settlement: {
             include: {
-              winningOption: true,
+              winningOptions: {
+                include: {
+                  betOption: true,
+                },
+              },
             },
           },
           createdBy: {

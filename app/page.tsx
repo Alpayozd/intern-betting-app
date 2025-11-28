@@ -49,7 +49,11 @@ export default async function Home() {
         include: {
           settlement: {
             include: {
-              winningOption: true,
+              winningOptions: {
+                include: {
+                  betOption: true,
+                },
+              },
             },
           },
         },
