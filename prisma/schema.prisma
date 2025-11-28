@@ -1,0 +1,149 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  createdAt     DateTime  @default(now())
+
+  createdGroups        Group[]            @relation("GroupCreator")
+  groupMemberships     GroupMembership[]
+  createdBetMarkets    BetMarket[]        @relation("BetMarketCreator")
+  betSelections        BetSelection[]
+  settledBetMarkets    BetSettlement[]    @relation("SettledBy")
+  groupScores          GroupScore[]
+}
+
+model Group {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?
+  inviteCode    String    @unique
+  createdByUserId String
+  createdAt     DateTime  @default(now())
+
+  createdBy     User              @relation("GroupCreator", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  memberships   GroupMembership[]
+  betMarkets    BetMarket[]
+  groupScores   GroupScore[]
+}
+
+model GroupMembership {
+  id        String   @id @default(cuid())
+  groupId   String
+  userId    String
+  role      GroupRole @default(MEMBER)
+  createdAt DateTime @default(now())
+
+  group     Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+}
+
+enum GroupRole {
+  ADMIN
+  MEMBER
+}
+
+model BetMarket {
+  id              String        @id @default(cuid())
+  groupId         String
+  title           String
+  description     String?
+  status          BetMarketStatus @default(OPEN)
+  createdByUserId String
+  closesAt        DateTime
+  createdAt       DateTime      @default(now())
+
+  group           Group         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdBy       User          @relation("BetMarketCreator", fields: [createdByUserId], references: [id])
+  betOptions      BetOption[]
+  betSelections   BetSelection[]
+  settlement      BetSettlement?
+
+  @@index([groupId])
+  @@index([status])
+}
+
+enum BetMarketStatus {
+  OPEN
+  CLOSED
+  SETTLED
+}
+
+model BetOption {
+  id          String   @id @default(cuid())
+  betMarketId String
+  label       String
+  odds        Float
+  createdAt   DateTime @default(now())
+
+  betMarket       BetMarket        @relation(fields: [betMarketId], references: [id], onDelete: Cascade)
+  betSelections   BetSelection[]
+  winningSettlements BetSettlement[]
+
+  @@index([betMarketId])
+}
+
+model BetSelection {
+  id                  String   @id @default(cuid())
+  betMarketId         String
+  betOptionId         String
+  userId              String
+  stakePoints         Int
+  potentialPayoutPoints Float
+  createdAt           DateTime @default(now())
+
+  betMarket   BetMarket  @relation(fields: [betMarketId], references: [id], onDelete: Cascade)
+  betOption   BetOption  @relation(fields: [betOptionId], references: [id], onDelete: Cascade)
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([betMarketId])
+  @@index([userId])
+  @@index([betOptionId])
+}
+
+model BetSettlement {
+  id              String   @id @default(cuid())
+  betMarketId     String   @unique
+  winningOptionId String
+  settledAt       DateTime @default(now())
+  settledByUserId String
+
+  betMarket       BetMarket  @relation(fields: [betMarketId], references: [id], onDelete: Cascade)
+  winningOption   BetOption  @relation(fields: [winningOptionId], references: [id])
+  settledBy       User       @relation("SettledBy", fields: [settledByUserId], references: [id])
+
+  @@index([betMarketId])
+}
+
+model GroupScore {
+  id            String   @id @default(cuid())
+  groupId       String
+  userId        String
+  totalPoints   Int      @default(1000)
+  initialPoints Int      @default(1000)
+  updatedAt     DateTime @default(now()) @updatedAt
+
+  group         Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+}
+
