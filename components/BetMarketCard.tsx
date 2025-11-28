@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import CreateBetSubMarketForm from "./CreateBetSubMarketForm"
 import SettleBetSubMarketForm from "./SettleBetSubMarketForm"
+import EditBetSubMarketForm from "./EditBetSubMarketForm"
 
 interface BetOption {
   id: string
@@ -29,6 +30,7 @@ interface BetSubMarket {
       }
     }[]
   } | null
+  createdByUserId?: string
 }
 
 interface BetMarket {
@@ -239,13 +241,54 @@ export default function BetMarketCard({
                     )}
                   </div>
 
-                  {/* Settlement form for admins */}
-                  {isAdmin && !isSubMarketSettled && (
-                    <SettleBetSubMarketForm
-                      betSubMarketId={subMarket.id}
-                      betOptions={subMarket.betOptions}
-                      isSettled={isSubMarketSettled}
-                    />
+                  {/* Admin controls */}
+                  {isAdmin && (
+                    <div className="mb-3 space-y-2">
+                      {!isSubMarketSettled && (
+                        <>
+                          <EditBetSubMarketForm
+                            betSubMarketId={subMarket.id}
+                            initialTitle={subMarket.title}
+                            initialDescription={subMarket.description}
+                            initialClosesAt={subMarket.closesAt}
+                            initialBetOptions={subMarket.betOptions}
+                            initialAllowMultipleBets={subMarket.allowMultipleBets || false}
+                            isSettled={isSubMarketSettled}
+                          />
+                          <SettleBetSubMarketForm
+                            betSubMarketId={subMarket.id}
+                            betOptions={subMarket.betOptions}
+                            isSettled={isSubMarketSettled}
+                          />
+                        </>
+                      )}
+                      {/* Vis bettingmuligheder for admin */}
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <h5 className="text-xs font-semibold text-blue-900 mb-2">
+                          Bettingmuligheder (Admin Oversigt)
+                        </h5>
+                        <div className="space-y-1">
+                          {subMarket.betOptions.map((option) => (
+                            <div
+                              key={option.id}
+                              className="flex justify-between items-center text-xs"
+                            >
+                              <span className="text-gray-700">{option.label}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="font-semibold text-blue-700">
+                                  Odds: {option.odds.toFixed(2)}
+                                </span>
+                                {option._count && (
+                                  <span className="text-gray-500">
+                                    ({option._count.betSelections} bets)
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
