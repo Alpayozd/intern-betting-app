@@ -6,6 +6,8 @@ import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import CreateBetMarketForm from "@/components/CreateBetMarketForm"
 import GroupBetMarkets from "@/components/GroupBetMarkets"
+import EditGroupForm from "@/components/EditGroupForm"
+import DeleteGroupButton from "@/components/DeleteGroupButton"
 import { formatNumber } from "@/lib/format"
 
 export default async function GroupDetailPage({
@@ -143,10 +145,24 @@ export default async function GroupDetailPage({
           {group.description && (
             <p className="text-gray-600 mt-2">{group.description}</p>
           )}
-          <div className="mt-2 text-sm text-gray-500">
-            Invite code: <span className="font-mono font-semibold">{group.inviteCode}</span>
+          <div className="mt-2 text-sm sm:text-base text-gray-700 font-medium">
+            Invite code: <span className="font-mono font-bold text-gray-900">{group.inviteCode}</span>
           </div>
         </div>
+
+        {isAdmin && (
+          <div className="mb-6 space-y-3">
+            <EditGroupForm
+              groupId={group.id}
+              initialName={group.name}
+              initialDescription={group.description}
+            />
+            <DeleteGroupButton
+              groupId={group.id}
+              groupName={group.name}
+            />
+          </div>
+        )}
 
         {userScore && (
           <div className="bg-blue-600 text-white rounded-lg p-4 sm:p-5 mb-6 shadow-md">
@@ -259,4 +275,5 @@ export default async function GroupDetailPage({
     </div>
   )
 }
+
 

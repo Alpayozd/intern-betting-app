@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { z } from "zod"
+
+const updateGroupSchema = z.object({
+  name: z.string().min(1, "Navn er påkrævet"),
+  description: z.string().optional(),
+})
 
 // GET - Hent gruppe detaljer
 export async function GET(
@@ -107,6 +113,124 @@ export async function GET(
     return NextResponse.json({ group })
   } catch (error) {
     console.error("Get group error:", error)
+    return NextResponse.json(
+      { error: "Der opstod en fejl" },
+      { status: 500 }
+    )
+  }
+}
+
+// PATCH - Opdater gruppe
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { groupId: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Ikke autoriseret" }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { name, description } = updateGroupSchema.parse(body)
+
+    // Hent gruppe og tjek om brugeren er admin
+    const group = await prisma.group.findUnique({
+      where: { id: params.groupId },
+      include: {
+        memberships: {
+          where: { userId: session.user.id },
+        },
+      },
+    })
+
+    if (!group) {
+      return NextResponse.json({ error: "Gruppe ikke fundet" }, { status: 404 })
+    }
+
+    const membership = group.memberships[0]
+    if (!membership || membership.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Kun admin kan redigere gruppen" },
+        { status: 403 }
+      )
+    }
+
+    // Opdater gruppe
+    const updatedGroup = await prisma.group.update({
+      where: { id: params.groupId },
+      data: {
+        name,
+        description: description || null,
+      },
+      include: {
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    })
+
+    return NextResponse.json({ group: updatedGroup })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: error.errors[0].message },
+        { status: 400 }
+      )
+    }
+
+    console.error("Update group error:", error)
+    return NextResponse.json(
+      { error: "Der opstod en fejl" },
+      { status: 500 }
+    )
+  }
+}
+
+// DELETE - Slet gruppe
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { groupId: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Ikke autoriseret" }, { status: 401 })
+    }
+
+    // Hent gruppe og tjek om brugeren er admin
+    const group = await prisma.group.findUnique({
+      where: { id: params.groupId },
+      include: {
+        memberships: {
+          where: { userId: session.user.id },
+        },
+      },
+    })
+
+    if (!group) {
+      return NextResponse.json({ error: "Gruppe ikke fundet" }, { status: 404 })
+    }
+
+    const membership = group.memberships[0]
+    if (!membership || membership.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Kun admin kan slette gruppen" },
+        { status: 403 }
+      )
+    }
+
+    // Slet gruppe (cascade sletter automatisk alle relaterede data)
+    await prisma.group.delete({
+      where: { id: params.groupId },
+    })
+
+    return NextResponse.json({ message: "Gruppe slettet" })
+  } catch (error) {
+    console.error("Delete group error:", error)
     return NextResponse.json(
       { error: "Der opstod en fejl" },
       { status: 500 }
