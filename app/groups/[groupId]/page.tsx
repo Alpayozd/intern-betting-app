@@ -148,21 +148,20 @@ export default async function GroupDetailPage({
           <div className="mt-2 text-sm sm:text-base text-gray-700 font-medium">
             Invite code: <span className="font-mono font-bold text-gray-900">{group.inviteCode}</span>
           </div>
+          {isAdmin && (
+            <div className="mt-4 flex flex-col sm:flex-row gap-3">
+              <EditGroupForm
+                groupId={group.id}
+                initialName={group.name}
+                initialDescription={group.description}
+              />
+              <DeleteGroupButton
+                groupId={group.id}
+                groupName={group.name}
+              />
+            </div>
+          )}
         </div>
-
-        {isAdmin && (
-          <div className="mb-6 space-y-3">
-            <EditGroupForm
-              groupId={group.id}
-              initialName={group.name}
-              initialDescription={group.description}
-            />
-            <DeleteGroupButton
-              groupId={group.id}
-              groupName={group.name}
-            />
-          </div>
-        )}
 
         {userScore && (
           <div className="bg-blue-600 text-white rounded-lg p-4 sm:p-5 mb-6 shadow-md">
