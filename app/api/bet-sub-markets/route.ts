@@ -156,18 +156,8 @@ export async function POST(request: NextRequest) {
     }
     
     // Opret BetSubMarket med options i en transaktion
-    // BRUGER RAW SQL som workaround for Prisma Client problem
+    // BRUGER PRISMA CREATE - alle felter er korrekte nu
     const betSubMarket = await prisma.$transaction(async (tx) => {
-      // Final validation - sikrer at betMarketId er en non-empty string
-      if (!trimmedBetMarketId || typeof trimmedBetMarketId !== 'string' || trimmedBetMarketId.trim().length === 0) {
-        console.error("CRITICAL: betMarketId validation failed in transaction:", {
-          original: betMarketId,
-          trimmed: trimmedBetMarketId,
-          type: typeof trimmedBetMarketId
-        })
-        throw new Error("betMarketId is missing or invalid in transaction")
-      }
-      
       // Eksplicit konstruer alle værdier først
       const finalBetMarketIdValue = trimmedBetMarketId.trim()
       const finalTitle = title.trim()
@@ -185,44 +175,52 @@ export async function POST(request: NextRequest) {
       if (!finalCreatedByUserId || finalCreatedByUserId.length === 0) {
         throw new Error("createdByUserId is empty")
       }
+      if (!finalClosesAt || isNaN(finalClosesAt.getTime())) {
+        throw new Error("closesAt is not a valid date")
+      }
       
-      // Generer ID med nanoid
-      const subMarketId = nanoid()
-      
-      // Log før oprettelse
-      console.log("About to create BetSubMarket with RAW SQL:", {
-        id: subMarketId,
+      // Log før oprettelse - vis ALLE felter
+      console.log("About to create BetSubMarket with Prisma:", {
         betMarketId: finalBetMarketIdValue,
         betMarketIdType: typeof finalBetMarketIdValue,
-        betMarketIdLength: finalBetMarketIdValue.length,
         title: finalTitle,
+        description: finalDescription,
+        status: "OPEN",
         createdByUserId: finalCreatedByUserId,
-        closesAt: finalClosesAt.toISOString()
+        createdByUserIdType: typeof finalCreatedByUserId,
+        closesAt: finalClosesAt.toISOString(),
+        closesAtType: typeof finalClosesAt
       })
       
-      // Opret BetSubMarket med RAW SQL for at omgå Prisma Client problem
-      // Brug $executeRawUnsafe for at sikre korrekt parameter binding
-      await tx.$executeRawUnsafe(`
-        INSERT INTO "BetSubMarket" ("id", "betMarketId", "title", "description", "status", "createdByUserId", "closesAt", "createdAt")
-        VALUES ($1, $2, $3, $4, 'OPEN', $5, $6, NOW())
-      `, subMarketId, finalBetMarketIdValue, finalTitle, finalDescription, finalCreatedByUserId, finalClosesAt)
+      // Opret BetSubMarket med Prisma - ALLE obligatoriske felter er inkluderet
+      const subMarket = await tx.betSubMarket.create({
+        data: {
+          betMarketId: finalBetMarketIdValue,
+          title: finalTitle,
+          description: finalDescription,
+          status: "OPEN",
+          createdByUserId: finalCreatedByUserId,
+          closesAt: finalClosesAt,
+          // createdAt har @default(now()) så vi behøver ikke sende det
+        },
+      })
       
-      console.log("BetSubMarket created with id:", subMarketId, "betMarketId:", finalBetMarketIdValue)
+      console.log("BetSubMarket created with id:", subMarket.id, "betMarketId:", subMarket.betMarketId)
       
       // Opret BetOptions derefter
       if (betOptions.length > 0) {
-        for (const opt of betOptions) {
-          const optionId = nanoid()
-          await tx.$executeRawUnsafe(`
-            INSERT INTO "BetOption" ("id", "betSubMarketId", "label", "odds", "createdAt")
-            VALUES ($1, $2, $3, $4, NOW())
-          `, optionId, subMarketId, opt.label.trim(), opt.odds)
-        }
+        await tx.betOption.createMany({
+          data: betOptions.map((opt) => ({
+            betSubMarketId: subMarket.id,
+            label: opt.label.trim(),
+            odds: opt.odds,
+          })),
+        })
       }
       
       // Hent den fulde BetSubMarket med options
       const fullSubMarket = await tx.betSubMarket.findUnique({
-        where: { id: subMarketId },
+        where: { id: subMarket.id },
         include: {
           betOptions: true,
         },
