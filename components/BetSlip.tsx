@@ -340,13 +340,14 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
                 isPlacing ||
                 totalStake === 0 ||
                 totalStake > userPoints ||
-                selections.length === 0
+                selections.length === 0 ||
+                selections.some(s => !s.stakePoints || s.stakePoints <= 0)
               }
               className="w-full bg-green-600 text-white py-4 sm:py-2.5 px-4 rounded-lg font-semibold text-base sm:text-sm hover:bg-green-700 active:bg-green-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[56px] sm:min-h-[auto] touch-manipulation"
             >
               {isPlacing
                 ? "Placerer bets..."
-                : `Placér ${selections.length} bet${selections.length !== 1 ? "s" : ""}`}
+                : `Placér ${selections.length} bet${selections.length !== 1 ? "s" : ""} (${formatNumber(totalStake)} pts)`}
             </button>
             {totalStake > userPoints && (
               <p className="text-red-600 text-xs mt-2 text-center">
