@@ -112,16 +112,16 @@ export default function SettleBetSubMarketForm({
                 return (
                   <label
                     key={option.id}
-                    className="flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-gray-50"
+                    className="flex items-center gap-3 p-3 sm:p-2 border rounded-md cursor-pointer hover:bg-gray-50 active:bg-gray-100 min-h-[52px] sm:min-h-[auto] touch-manipulation"
                   >
                     <input
                       type="checkbox"
                       checked={isSelected}
                       onChange={() => handleOptionToggle(option.id)}
-                      className="w-4 h-4 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500"
+                      className="w-5 h-5 sm:w-4 sm:h-4 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500 touch-manipulation"
                     />
-                    <span className="text-sm text-gray-700">
-                      {option.label || 'Ingen label'} (Odds: {option.odds ? option.odds.toFixed(2) : 'N/A'})
+                    <span className="text-base sm:text-sm text-gray-700 flex-1">
+                      {option.label || 'Ingen label'} <span className="text-gray-500">(Odds: {option.odds ? option.odds.toFixed(2) : 'N/A'})</span>
                     </span>
                   </label>
                 )
@@ -137,7 +137,7 @@ export default function SettleBetSubMarketForm({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-yellow-600 text-white py-2 px-4 rounded-md hover:bg-yellow-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+          className="w-full bg-yellow-600 text-white py-3 sm:py-2 px-4 rounded-md hover:bg-yellow-700 active:bg-yellow-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-sm font-medium min-h-[48px] sm:min-h-[auto] touch-manipulation"
         >
           {isSubmitting ? "Afgører..." : "Afgør Bet"}
         </button>

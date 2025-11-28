@@ -307,19 +307,19 @@ export default function BetMarketCard({
                           key={option.id}
                           onClick={() => handleOptionClick(subMarket, option)}
                           disabled={!isSubMarketOpen}
-                          className={`p-3 rounded-lg border-2 transition-all text-left ${
+                          className={`p-4 sm:p-3 rounded-lg border-2 transition-all text-left min-h-[64px] sm:min-h-[auto] touch-manipulation ${
                             isWinner
-                              ? "bg-green-50 border-green-300"
+                              ? "bg-green-50 border-green-300 active:bg-green-100"
                               : isSelected
-                              ? "bg-blue-100 border-blue-500"
+                              ? "bg-blue-100 border-blue-500 active:bg-blue-200"
                               : isSubMarketOpen
-                              ? "border-gray-300 hover:border-blue-500 hover:bg-blue-50 cursor-pointer"
+                              ? "border-gray-300 hover:border-blue-500 hover:bg-blue-50 active:bg-blue-100 cursor-pointer"
                               : "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
                           }`}
                         >
                           <div className="flex justify-between items-center">
                             <span
-                              className={`font-medium text-sm ${
+                              className={`font-medium text-base sm:text-sm ${
                                 isWinner
                                   ? "text-green-800"
                                   : isSelected
@@ -329,17 +329,17 @@ export default function BetMarketCard({
                             >
                               {option.label}
                               {isSelected && !isWinner && (
-                                <span className="ml-2 text-blue-700 font-semibold">
+                                <span className="ml-2 text-blue-700 font-semibold text-sm">
                                   ✓ Valgt
                                 </span>
                               )}
                               {isWinner && (
-                                <span className="ml-2 text-green-700">✓ Vinder</span>
+                                <span className="ml-2 text-green-700 text-sm">✓ Vinder</span>
                               )}
                             </span>
                             <div className="text-right">
                               <span
-                                className={`font-bold text-lg ${
+                                className={`font-bold text-xl sm:text-lg ${
                                   isWinner
                                     ? "text-green-700"
                                     : isSelected

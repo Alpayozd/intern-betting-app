@@ -171,12 +171,12 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
         <button
           data-bet-slip-button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-4 right-4 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg shadow-lg hover:bg-blue-700 transition-colors z-40 flex items-center gap-2 text-xs sm:text-sm"
+          className="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-3 rounded-lg shadow-lg hover:bg-blue-700 active:bg-blue-800 transition-colors z-40 flex items-center gap-2 text-sm font-medium min-h-[44px] touch-manipulation"
         >
           <span className="hidden sm:inline">Bet Slip</span>
           <span className="sm:hidden">Slip</span>
           {selections.length > 0 && (
-            <span className="bg-blue-700 px-2 py-1 rounded-full text-xs">
+            <span className="bg-blue-700 px-2.5 py-1 rounded-full text-xs font-bold">
               {selections.length}
             </span>
           )}
@@ -184,29 +184,30 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
       )}
       <div
         data-bet-slip
-        className={`fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 shadow-2xl z-50 transition-transform duration-300 max-h-[50vh] sm:max-h-[50vh] ${
+        className={`fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 shadow-2xl z-50 transition-transform duration-300 max-h-[85vh] sm:max-h-[50vh] ${
           isOpen ? "translate-y-0" : "translate-y-full pointer-events-none"
         }`}
         onClick={(e) => e.stopPropagation()}
       >
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-blue-600 text-white px-3 sm:px-4 py-2 flex justify-between items-center">
+        <div className="bg-blue-600 text-white px-4 py-3 flex justify-between items-center min-h-[56px]">
           <div className="flex items-center gap-2 sm:gap-3">
-            <h2 className="text-base sm:text-lg font-bold">Bet Slip</h2>
-            <span className="bg-blue-700 px-2 py-1 rounded-full text-xs">
+            <h2 className="text-lg sm:text-xl font-bold">Bet Slip</h2>
+            <span className="bg-blue-700 px-2.5 py-1 rounded-full text-xs font-bold">
               {selections.length} bet{selections.length !== 1 ? "s" : ""}
             </span>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="text-xs hidden sm:block">
+          <div className="flex items-center gap-3">
+            <div className="text-sm sm:text-base">
               <span className="opacity-80">Points:</span>{" "}
               <span className="font-bold">{formatNumber(userPoints)}</span>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-white hover:text-gray-200 text-xl font-bold w-6 h-6 flex items-center justify-center"
+              className="text-white hover:text-gray-200 active:text-gray-300 text-2xl font-bold w-10 h-10 flex items-center justify-center touch-manipulation"
               title="Minimer"
+              aria-label="Luk bet slip"
             >
               ↓
             </button>
@@ -214,7 +215,7 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto max-h-[calc(50vh-120px)]">
+        <div className="overflow-y-auto max-h-[calc(85vh-140px)] sm:max-h-[calc(50vh-120px)]">
           {selections.length === 0 ? (
             <div className="p-4 text-center text-gray-500">
               <p className="text-sm mb-1">Ingen bets i slip'en</p>
@@ -237,8 +238,9 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
                     </div>
                     <button
                       onClick={() => removeSelection(index)}
-                      className="text-red-600 hover:text-red-800 ml-2 text-lg flex-shrink-0"
+                      className="text-red-600 hover:text-red-800 active:text-red-900 ml-2 text-2xl font-bold flex-shrink-0 w-10 h-10 flex items-center justify-center touch-manipulation"
                       title="Fjern"
+                      aria-label="Fjern bet"
                     >
                       ×
                     </button>

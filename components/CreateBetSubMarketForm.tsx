@@ -164,7 +164,7 @@ export default function CreateBetSubMarketForm({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base sm:text-sm min-h-[48px] sm:min-h-[auto] touch-manipulation"
           />
         </div>
 
@@ -175,8 +175,8 @@ export default function CreateBetSubMarketForm({
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            rows={2}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={3}
+            className="w-full px-4 py-3 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base sm:text-sm min-h-[80px] sm:min-h-[auto] touch-manipulation"
           />
         </div>
 
@@ -189,7 +189,7 @@ export default function CreateBetSubMarketForm({
                 value={closesAt}
                 onChange={(e) => setClosesAt(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base sm:text-sm min-h-[48px] sm:min-h-[auto] touch-manipulation"
               />
             </div>
 
@@ -199,7 +199,7 @@ export default function CreateBetSubMarketForm({
                   type="checkbox"
                   checked={allowMultipleBets}
                   onChange={(e) => setAllowMultipleBets(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-5 h-5 sm:w-4 sm:h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 touch-manipulation"
                 />
                 <span className="text-sm font-medium text-gray-700">
                   Tillad flere bets per option (spillere kan bette på flere options)
@@ -212,14 +212,14 @@ export default function CreateBetSubMarketForm({
                 Options *
               </label>
           {options.map((option, index) => (
-            <div key={index} className="flex gap-2 mb-2">
+            <div key={index} className="flex gap-2 mb-3 sm:mb-2">
               <input
                 type="text"
                 placeholder="Option label"
                 value={option.label}
                 onChange={(e) => updateOption(index, "label", e.target.value)}
                 required
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-4 py-3 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base sm:text-sm min-h-[48px] sm:min-h-[auto] touch-manipulation"
               />
               <input
                 type="number"
@@ -231,13 +231,14 @@ export default function CreateBetSubMarketForm({
                   updateOption(index, "odds", parseFloat(e.target.value) || 1)
                 }
                 required
-                className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-28 sm:w-24 px-3 py-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base sm:text-sm min-h-[48px] sm:min-h-[auto] touch-manipulation"
               />
               {options.length > 2 && (
                 <button
                   type="button"
                   onClick={() => removeOption(index)}
-                  className="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                  className="px-4 sm:px-3 py-3 sm:py-2 bg-red-600 text-white rounded-md hover:bg-red-700 active:bg-red-800 min-w-[48px] min-h-[48px] sm:min-w-[auto] sm:min-h-[auto] touch-manipulation"
+                  aria-label="Fjern option"
                 >
                   ×
                 </button>
@@ -257,14 +258,14 @@ export default function CreateBetSubMarketForm({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-blue-600 text-white px-4 py-3 sm:py-2 rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-sm font-medium min-h-[48px] sm:min-h-[auto] touch-manipulation"
           >
             {isSubmitting ? "Opretter..." : "Opret Bet"}
           </button>
           <button
             type="button"
             onClick={() => setIsOpen(false)}
-            className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors"
+            className="bg-gray-300 text-gray-700 px-4 py-3 sm:py-2 rounded-lg hover:bg-gray-400 active:bg-gray-500 transition-colors text-base sm:text-sm font-medium min-h-[48px] sm:min-h-[auto] touch-manipulation"
           >
             Annuller
           </button>
