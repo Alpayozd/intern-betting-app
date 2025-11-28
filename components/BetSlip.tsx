@@ -37,23 +37,28 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
     const handleAddBet = (event: CustomEvent<BetSelection>) => {
       const newSelection = event.detail
       setSelections((prev) => {
-        // Tjek om den samme option allerede findes (samme sub market + samme option)
-        const alreadyExists = prev.find(
-          (s) =>
-            s.betSubMarketId === newSelection.betSubMarketId &&
-            s.betOptionId === newSelection.betOptionId
+        // Tjek om der allerede er en bet fra samme BetSubMarket
+        const existingFromSameSubMarket = prev.find(
+          (s) => s.betSubMarketId === newSelection.betSubMarketId
         )
         
-        // Hvis den allerede findes, fjern den (toggle off)
-        if (alreadyExists) {
-          return prev.filter(
-            (s) =>
-              !(s.betSubMarketId === newSelection.betSubMarketId &&
-                s.betOptionId === newSelection.betOptionId)
+        // Hvis der allerede er en bet fra samme sub market
+        if (existingFromSameSubMarket) {
+          // Hvis det er den samme option, fjern den (toggle off)
+          if (existingFromSameSubMarket.betOptionId === newSelection.betOptionId) {
+            return prev.filter(
+              (s) => s.betSubMarketId !== newSelection.betSubMarketId
+            )
+          }
+          // Hvis det er en anden option, erstatt den gamle med den nye
+          return prev.map((s) =>
+            s.betSubMarketId === newSelection.betSubMarketId
+              ? newSelection
+              : s
           )
         }
         
-        // Tilføj den nye selection (tillader flere options fra samme market)
+        // Hvis der ikke er nogen bet fra dette sub market, tilføj den nye
         return [...prev, newSelection]
       })
       setIsOpen(true)

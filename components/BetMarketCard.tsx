@@ -176,7 +176,9 @@ export default function BetMarketCard({
               const isSubMarketClosed =
                 subMarket.status === "CLOSED" || new Date() > new Date(subMarket.closesAt)
               const isSubMarketOpen = subMarket.status === "OPEN" && !isSubMarketClosed
+              // Kun én valgt option per sub market
               const selectedOptionIds = selectedOptions.get(subMarket.id) || new Set()
+              const selectedOptionId = selectedOptionIds.size > 0 ? Array.from(selectedOptionIds)[0] : null
 
               return (
                 <div
@@ -225,7 +227,8 @@ export default function BetMarketCard({
                     {subMarket.betOptions.map((option) => {
                       const isWinner =
                         subMarket.settlement?.winningOptionId === option.id
-                      const isSelected = selectedOptionIds.has(option.id)
+                      // Kun én valgt option per sub market
+                      const isSelected = selectedOptionId === option.id
 
                       return (
                         <button
