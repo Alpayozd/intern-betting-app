@@ -195,12 +195,16 @@ async function main() {
   const betSubMarket2 = betMarket2.betSubMarkets[0]
   const winningOption = betSubMarket2.betOptions[0] // Alpay vandt
 
-  // Opret settlement for betSubMarket2
+  // Opret settlement for betSubMarket2 med vindende option
   await prisma.betSubMarketSettlement.create({
     data: {
       betSubMarketId: betSubMarket2.id,
-      winningOptionId: winningOption.id,
       settledByUserId: user1.id,
+      winningOptions: {
+        create: {
+          betOptionId: winningOption.id,
+        },
+      },
     },
   })
 
