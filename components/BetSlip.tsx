@@ -123,8 +123,12 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
     setSelections((prev) => prev.filter((_, i) => i !== index))
   }
 
-  const updateStake = (index: number, stake: number) => {
+  const updateStake = (index: number, value: string) => {
+    // Fjern leading zeros og konverter til number
+    const cleanValue = value.replace(/^0+/, '') || '0'
+    const stake = parseInt(cleanValue) || 0
     if (stake < 0) return
+    
     setSelections((prev) => {
       const updated = [...prev]
       updated[index] = {
