@@ -149,9 +149,12 @@ export default async function GroupDetailPage({
         </div>
 
         {userScore && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <p className="text-sm">
-              <strong>Dine points:</strong> {formatNumber(userScore.totalPoints)}
+          <div className="bg-blue-600 text-white rounded-lg p-4 sm:p-5 mb-6 shadow-md">
+            <p className="text-base sm:text-lg font-semibold">
+              <span className="opacity-90">Dine points:</span>{" "}
+              <span className="text-2xl sm:text-3xl font-bold">
+                {formatNumber(userScore.totalPoints)}
+              </span>
             </p>
           </div>
         )}
@@ -196,33 +199,33 @@ export default async function GroupDetailPage({
           </div>
 
           <div className="space-y-4 sm:space-y-6 lg:sticky lg:top-4 lg:self-start">
-            <div className="bg-white rounded-lg shadow">
-              <div className="p-6 border-b">
-                <h2 className="text-xl font-semibold">Leaderboard</h2>
+            <div className="bg-white rounded-lg shadow-lg border-2 border-gray-200">
+              <div className="p-4 sm:p-6 border-b-2 border-gray-200 bg-gray-50">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Leaderboard</h2>
               </div>
-              <div className="divide-y">
+              <div className="divide-y divide-gray-200">
                 {group.groupScores.map((score, index) => (
                   <div
                     key={score.id}
-                    className={`p-4 ${
+                    className={`p-4 sm:p-5 ${
                       score.userId === session.user.id
-                        ? "bg-blue-50"
-                        : ""
+                        ? "bg-blue-100 border-l-4 border-blue-600"
+                        : "bg-white"
                     }`}
                   >
                     <div className="flex justify-between items-center">
                       <div className="flex items-center space-x-3">
-                        <span className="text-lg font-semibold text-gray-500 w-6">
+                        <span className="text-lg sm:text-xl font-bold text-gray-700 w-8">
                           #{index + 1}
                         </span>
-                        <span className="font-medium">
+                        <span className="font-semibold text-gray-900 text-sm sm:text-base">
                           {score.user.name}
                           {score.userId === session.user.id && (
-                            <span className="ml-2 text-blue-600">(Dig)</span>
+                            <span className="ml-2 text-blue-700 font-bold">(Dig)</span>
                           )}
                         </span>
                       </div>
-                      <span className="font-semibold">
+                      <span className="font-bold text-gray-900 text-sm sm:text-base">
                         {formatNumber(score.totalPoints)} pts
                       </span>
                     </div>
@@ -231,17 +234,17 @@ export default async function GroupDetailPage({
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow">
-              <div className="p-6 border-b">
-                <h2 className="text-xl font-semibold">Medlemmer</h2>
+            <div className="bg-white rounded-lg shadow-lg border-2 border-gray-200">
+              <div className="p-4 sm:p-6 border-b-2 border-gray-200 bg-gray-50">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Medlemmer</h2>
               </div>
-              <div className="divide-y">
+              <div className="divide-y divide-gray-200">
                 {group.memberships.map((membership) => (
-                  <div key={membership.id} className="p-4">
+                  <div key={membership.id} className="p-4 sm:p-5 bg-white">
                     <div className="flex justify-between items-center">
-                      <span>{membership.user.name}</span>
+                      <span className="font-medium text-gray-900 text-sm sm:text-base">{membership.user.name}</span>
                       {membership.role === "ADMIN" && (
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        <span className="text-xs sm:text-sm bg-blue-600 text-white px-3 py-1.5 rounded font-semibold">
                           Admin
                         </span>
                       )}

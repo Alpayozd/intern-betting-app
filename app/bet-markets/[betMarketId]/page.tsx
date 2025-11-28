@@ -152,9 +152,12 @@ export default async function BetMarketDetailPage({
         </div>
 
         {userScore && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <p className="text-sm">
-              <strong>Dine points:</strong> {formatNumber(userScore.totalPoints)}
+          <div className="bg-blue-600 text-white rounded-lg p-4 sm:p-5 mb-6 shadow-md">
+            <p className="text-base sm:text-lg font-semibold">
+              <span className="opacity-90">Dine points:</span>{" "}
+              <span className="text-2xl sm:text-3xl font-bold">
+                {formatNumber(userScore.totalPoints)}
+              </span>
             </p>
           </div>
         )}
