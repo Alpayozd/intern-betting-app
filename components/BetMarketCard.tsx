@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import CreateBetSubMarketForm from "./CreateBetSubMarketForm"
+import SettleBetSubMarketForm from "./SettleBetSubMarketForm"
 
 interface BetOption {
   id: string
@@ -222,6 +223,15 @@ export default function BetMarketCard({
                       </p>
                     )}
                   </div>
+
+                  {/* Settlement form for admins */}
+                  {isAdmin && !isSubMarketSettled && (
+                    <SettleBetSubMarketForm
+                      betSubMarketId={subMarket.id}
+                      betOptions={subMarket.betOptions}
+                      isSettled={isSubMarketSettled}
+                    />
+                  )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                     {subMarket.betOptions.map((option) => {
