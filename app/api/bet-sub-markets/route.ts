@@ -69,18 +69,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Valider betMarketId igen før oprettelse
+    if (!betMarketId || betMarketId.trim() === '') {
+      console.error("betMarketId is missing or empty:", betMarketId)
+      return NextResponse.json(
+        { error: "betMarketId er påkrævet og må ikke være tom" },
+        { status: 400 }
+      )
+    }
+    
+    console.log("Creating BetSubMarket with betMarketId:", betMarketId)
+    
     // Opret BetSubMarket med options i en transaktion
     const betSubMarket = await prisma.$transaction(async (tx) => {
       const subMarket = await tx.betSubMarket.create({
         data: {
-          betMarketId,
-          title,
-          description,
+          betMarketId: betMarketId.trim(),
+          title: title.trim(),
+          description: description?.trim() || null,
           closesAt: new Date(closesAt),
           createdByUserId: session.user.id,
           betOptions: {
             create: betOptions.map((opt) => ({
-              label: opt.label,
+              label: opt.label.trim(),
               odds: opt.odds,
             })),
           },
@@ -102,8 +113,20 @@ export async function POST(request: NextRequest) {
     }
 
     console.error("Create bet sub market error:", error)
+    
+    // Return mere detaljeret fejl i development
+    const errorMessage = process.env.NODE_ENV === "development" 
+      ? (error as any)?.message || "Der opstod en fejl"
+      : "Der opstod en fejl"
+    
     return NextResponse.json(
-      { error: "Der opstod en fejl" },
+      { 
+        error: errorMessage,
+        details: process.env.NODE_ENV === "development" ? {
+          code: (error as any)?.code,
+          meta: (error as any)?.meta,
+        } : undefined
+      },
       { status: 500 }
     )
   }
