@@ -185,21 +185,31 @@ export async function POST(request: NextRequest) {
         createdByUserId: finalCreatedByUserId
       })
       
-      // Opret BetSubMarket - konstruer data objektet direkte uden mellemliggende variabler
-      const subMarket = await tx.betSubMarket.create({
-        data: {
-          betMarketId: finalBetMarketIdValue,
-          title: finalTitle,
-          description: finalDescription,
-          closesAt: finalClosesAt,
-          createdByUserId: finalCreatedByUserId,
-          betOptions: {
-            create: betOptions.map((opt) => ({
-              label: opt.label.trim(),
-              odds: opt.odds,
-            })),
-          },
+      // Opret BetSubMarket - konstruer data objektet direkte
+      // VIGTIGT: Send betMarketId direkte uden nogen transformationer
+      const createData = {
+        betMarketId: finalBetMarketIdValue,
+        title: finalTitle,
+        description: finalDescription,
+        closesAt: finalClosesAt,
+        createdByUserId: finalCreatedByUserId,
+        betOptions: {
+          create: betOptions.map((opt) => ({
+            label: opt.label.trim(),
+            odds: opt.odds,
+          })),
         },
+      }
+      
+      // Final check - betMarketId må IKKE være null eller undefined
+      if (createData.betMarketId === null || createData.betMarketId === undefined) {
+        throw new Error(`betMarketId is null/undefined in createData: ${JSON.stringify(createData)}`)
+      }
+      
+      console.log("Final createData.betMarketId:", createData.betMarketId, "type:", typeof createData.betMarketId)
+      
+      const subMarket = await tx.betSubMarket.create({
+        data: createData,
         include: {
           betOptions: true,
         },
