@@ -36,25 +36,24 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
     const handleAddBet = (event: CustomEvent<BetSelection>) => {
       const newSelection = event.detail
       setSelections((prev) => {
-        // Fjern alle bets fra samme bet market først
-        const filtered = prev.filter(
-          (s) => s.betMarketId !== newSelection.betMarketId
-        )
-        
-        // Tjek om den nye selection allerede findes (samme option)
+        // Tjek om den samme option allerede findes (samme market + samme option)
         const alreadyExists = prev.find(
           (s) =>
             s.betMarketId === newSelection.betMarketId &&
             s.betOptionId === newSelection.betOptionId
         )
         
-        // Hvis den allerede findes, returner den filtrerede liste (fjern den)
+        // Hvis den allerede findes, fjern den (toggle off)
         if (alreadyExists) {
-          return filtered
+          return prev.filter(
+            (s) =>
+              !(s.betMarketId === newSelection.betMarketId &&
+                s.betOptionId === newSelection.betOptionId)
+          )
         }
         
-        // Tilføj den nye selection
-        return [...filtered, newSelection]
+        // Tilføj den nye selection (tillader flere options fra samme market)
+        return [...prev, newSelection]
       })
       setIsOpen(true)
     }
@@ -197,7 +196,7 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
           ) : (
             <div className="divide-y">
               {selections.map((selection, index) => (
-                <div key={index} className="p-2 sm:p-3 hover:bg-gray-50">
+                <div key={`${selection.betMarketId}-${selection.betOptionId}-${index}`} className="p-2 sm:p-3 hover:bg-gray-50">
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex-1 min-w-0 pr-2">
                       <p className="font-semibold text-xs text-gray-900 truncate">

@@ -34,17 +34,18 @@ export default function BetMarketCard({
   betMarket,
   isOpen,
 }: BetMarketCardProps) {
-  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null)
+  const [selectedOptionIds, setSelectedOptionIds] = useState<Set<string>>(new Set())
 
   // Lyt til opdateringer fra bet slip
   useEffect(() => {
     const handleSelectionsUpdate = (event: CustomEvent<BetSelection[]>) => {
       const selections = event.detail
-      const selectionForThisMarket = selections.find(
+      // Find alle valgte options fra dette market
+      const selectionsForThisMarket = selections.filter(
         (s) => s.betMarketId === betMarket.id
       )
-      setSelectedOptionId(
-        selectionForThisMarket?.betOptionId || null
+      setSelectedOptionIds(
+        new Set(selectionsForThisMarket.map((s) => s.betOptionId))
       )
     }
 
@@ -76,7 +77,17 @@ export default function BetMarketCard({
       },
     })
     window.dispatchEvent(event)
-    setSelectedOptionId(option.id)
+    
+    // Opdater lokal state (toggle)
+    setSelectedOptionIds((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(option.id)) {
+        newSet.delete(option.id)
+      } else {
+        newSet.add(option.id)
+      }
+      return newSet
+    })
   }
 
   interface BetSelection {
@@ -138,7 +149,7 @@ export default function BetMarketCard({
           {betMarket.betOptions.map((option) => {
             const isWinner =
               betMarket.settlement?.winningOption.label === option.label
-            const isSelected = selectedOptionId === option.id
+            const isSelected = selectedOptionIds.has(option.id)
             return (
               <button
                 key={option.id}
@@ -157,7 +168,7 @@ export default function BetMarketCard({
                 <div className="flex justify-between items-center">
                   <span
                     className={`font-medium text-sm ${
-                      isWinner ? "text-green-800" : "text-gray-900"
+                      isWinner ? "text-green-800" : isSelected ? "text-blue-800" : "text-gray-900"
                     }`}
                   >
                     {option.label}
@@ -165,7 +176,7 @@ export default function BetMarketCard({
                       <span className="ml-2 text-blue-700 font-semibold">✓ Valgt</span>
                     )}
                     {isWinner && (
-                      <span className="ml-2 text-green-700">✓</span>
+                      <span className="ml-2 text-green-700">✓ Vinder</span>
                     )}
                   </span>
                   <div className="text-right">
@@ -173,6 +184,8 @@ export default function BetMarketCard({
                       className={`font-bold text-lg ${
                         isWinner
                           ? "text-green-700"
+                          : isSelected
+                          ? "text-blue-700"
                           : isOpen && !isSettled && !isClosed
                           ? "text-blue-600"
                           : "text-gray-500"
