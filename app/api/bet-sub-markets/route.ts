@@ -155,6 +155,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Opret BetSubMarket med options i en transaktion
+    // PRØVER ANDEN TILGANG: Opret BetSubMarket først, derefter BetOptions separat
     const betSubMarket = await prisma.$transaction(async (tx) => {
       // Final validation - sikrer at betMarketId er en non-empty string
       if (!trimmedBetMarketId || typeof trimmedBetMarketId !== 'string' || trimmedBetMarketId.trim().length === 0) {
@@ -193,36 +194,43 @@ export async function POST(request: NextRequest) {
         createdByUserId: finalCreatedByUserId
       })
       
-      // Opret BetSubMarket - konstruer data objektet direkte
-      // VIGTIGT: Send betMarketId direkte uden nogen transformationer
-      const createData = {
-        betMarketId: finalBetMarketIdValue,
-        title: finalTitle,
-        description: finalDescription,
-        closesAt: finalClosesAt,
-        createdByUserId: finalCreatedByUserId,
-        betOptions: {
-          create: betOptions.map((opt) => ({
+      // Opret BetSubMarket FØRST (uden nested creates)
+      const subMarket = await tx.betSubMarket.create({
+        data: {
+          betMarketId: finalBetMarketIdValue,
+          title: finalTitle,
+          description: finalDescription,
+          closesAt: finalClosesAt,
+          createdByUserId: finalCreatedByUserId,
+        },
+      })
+      
+      console.log("BetSubMarket created with id:", subMarket.id, "betMarketId:", subMarket.betMarketId)
+      
+      // Opret BetOptions derefter
+      if (betOptions.length > 0) {
+        await tx.betOption.createMany({
+          data: betOptions.map((opt) => ({
+            betSubMarketId: subMarket.id,
             label: opt.label.trim(),
             odds: opt.odds,
           })),
-        },
+        })
       }
       
-      // Final check - betMarketId må IKKE være null eller undefined
-      if (createData.betMarketId === null || createData.betMarketId === undefined) {
-        throw new Error(`betMarketId is null/undefined in createData: ${JSON.stringify(createData)}`)
-      }
-      
-      console.log("Final createData.betMarketId:", createData.betMarketId, "type:", typeof createData.betMarketId)
-      
-      const subMarket = await tx.betSubMarket.create({
-        data: createData,
+      // Hent den fulde BetSubMarket med options
+      const fullSubMarket = await tx.betSubMarket.findUnique({
+        where: { id: subMarket.id },
         include: {
           betOptions: true,
         },
       })
-      return subMarket
+      
+      if (!fullSubMarket) {
+        throw new Error("Failed to retrieve created BetSubMarket")
+      }
+      
+      return fullSubMarket
     })
 
     return NextResponse.json(betSubMarket, { status: 201 })
