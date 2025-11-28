@@ -26,6 +26,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
+    
+    // Valider at betMarketId er til stede
+    if (!body.betMarketId || typeof body.betMarketId !== 'string') {
+      return NextResponse.json(
+        { error: "betMarketId er påkrævet" },
+        { status: 400 }
+      )
+    }
+    
     const { betMarketId, title, description, closesAt, betOptions } =
       createBetSubMarketSchema.parse(body)
 

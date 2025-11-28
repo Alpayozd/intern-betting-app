@@ -150,7 +150,7 @@ export default function BetMarketCard({
 
       {/* Bet Sub Markets */}
       <div className="p-3 sm:p-4">
-        {isAdmin && isOpen && (
+        {isAdmin && isOpen && betMarket.id && (
           <div className="mb-4">
             <CreateBetSubMarketForm betMarketId={betMarket.id} />
           </div>

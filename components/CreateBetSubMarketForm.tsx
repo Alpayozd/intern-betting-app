@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
 interface CreateBetSubMarketFormProps {
@@ -12,6 +12,13 @@ export default function CreateBetSubMarketForm({
 }: CreateBetSubMarketFormProps) {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
+  
+  // Debug: Log betMarketId
+  useEffect(() => {
+    if (!betMarketId) {
+      console.error("CreateBetSubMarketForm: betMarketId is missing!", betMarketId)
+    }
+  }, [betMarketId])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
@@ -39,21 +46,32 @@ export default function CreateBetSubMarketForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Valider betMarketId
+    if (!betMarketId) {
+      alert("Fejl: BetMarket ID mangler")
+      return
+    }
+    
     setIsSubmitting(true)
 
     try {
+      const requestBody = {
+        betMarketId: betMarketId,
+        title: title.trim(),
+        description: description.trim() || undefined,
+        closesAt: new Date(closesAt).toISOString(),
+        betOptions: options.filter((opt) => opt.label.trim() !== ""),
+      }
+      
+      console.log("Creating bet sub market with:", { betMarketId, title })
+      
       const response = await fetch("/api/bet-sub-markets", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          betMarketId,
-          title,
-          description,
-          closesAt: new Date(closesAt).toISOString(),
-          betOptions: options.filter((opt) => opt.label.trim() !== ""),
-        }),
+        body: JSON.stringify(requestBody),
       })
 
       if (!response.ok) {
