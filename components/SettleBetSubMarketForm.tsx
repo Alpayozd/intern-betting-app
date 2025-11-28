@@ -93,27 +93,31 @@ export default function SettleBetSubMarketForm({
           <label className="block text-xs font-medium text-gray-700 mb-2">
             Vælg vinder(e) (kan vælge flere):
           </label>
-          <div className="space-y-2">
-            {betOptions.map((option) => {
-              const isSelected = winningOptionIds.includes(option.id)
-              return (
-                <label
-                  key={option.id}
-                  className="flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-gray-50"
-                >
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => handleOptionToggle(option.id)}
-                    className="w-4 h-4 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500"
-                  />
-                  <span className="text-sm text-gray-700">
-                    {option.label} (Odds: {option.odds.toFixed(2)})
-                  </span>
-                </label>
-              )
-            })}
-          </div>
+          {betOptions && betOptions.length > 0 ? (
+            <div className="space-y-2">
+              {betOptions.map((option) => {
+                const isSelected = winningOptionIds.includes(option.id)
+                return (
+                  <label
+                    key={option.id}
+                    className="flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-gray-50"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => handleOptionToggle(option.id)}
+                      className="w-4 h-4 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500"
+                    />
+                    <span className="text-sm text-gray-700">
+                      {option.label} (Odds: {option.odds.toFixed(2)})
+                    </span>
+                  </label>
+                )
+              })}
+            </div>
+          ) : (
+            <p className="text-xs text-gray-500">Ingen options tilgængelige</p>
+          )}
         </div>
         <button
           type="submit"
