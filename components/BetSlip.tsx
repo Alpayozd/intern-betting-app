@@ -171,10 +171,16 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
         <button
           data-bet-slip-button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-3 rounded-lg shadow-lg hover:bg-blue-700 active:bg-blue-800 transition-colors z-40 flex items-center gap-2 text-sm font-medium min-h-[44px] touch-manipulation"
+          className="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-3 rounded-lg shadow-2xl hover:bg-blue-700 active:bg-blue-800 transition-colors z-[9999] flex items-center gap-2 text-sm font-medium min-h-[56px] min-w-[80px] touch-manipulation"
+          style={{ 
+            position: 'fixed',
+            bottom: '1rem',
+            right: '1rem',
+            zIndex: 9999
+          }}
         >
           <span className="hidden sm:inline">Bet Slip</span>
-          <span className="sm:hidden">Slip</span>
+          <span className="sm:hidden font-bold">Slip</span>
           {selections.length > 0 && (
             <span className="bg-blue-700 px-2.5 py-1 rounded-full text-xs font-bold">
               {selections.length}
@@ -184,10 +190,17 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
       )}
       <div
         data-bet-slip
-        className={`fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 shadow-2xl z-50 transition-transform duration-300 max-h-[85vh] sm:max-h-[50vh] ${
+        className={`fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 shadow-2xl z-[10000] transition-transform duration-300 max-h-[85vh] sm:max-h-[50vh] ${
           isOpen ? "translate-y-0" : "translate-y-full pointer-events-none"
         }`}
         onClick={(e) => e.stopPropagation()}
+        style={{ 
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 10000
+        }}
       >
       <div className="max-w-7xl mx-auto">
         {/* Header */}
