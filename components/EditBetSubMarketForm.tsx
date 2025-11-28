@@ -75,7 +75,13 @@ export default function EditBetSubMarketForm({
     value: string | number
   ) => {
     const updated = [...options]
-    updated[index] = { ...updated[index], [field]: value }
+    if (field === "odds" && typeof value === "string") {
+      // Fjern leading zeros for odds
+      const cleanValue = value.replace(/^0+/, '') || '1'
+      updated[index] = { ...updated[index], [field]: parseFloat(cleanValue) || 1 }
+    } else {
+      updated[index] = { ...updated[index], [field]: value }
+    }
     setOptions(updated)
   }
 
@@ -198,14 +204,20 @@ export default function EditBetSubMarketForm({
                 className="flex-1 px-4 py-3 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base sm:text-sm min-h-[48px] sm:min-h-[auto] touch-manipulation"
               />
               <input
-                type="number"
-                step="0.01"
-                min="1"
+                type="text"
+                inputMode="decimal"
                 placeholder="Odds"
-                value={option.odds}
-                onChange={(e) =>
-                  updateOption(index, "odds", parseFloat(e.target.value) || 1)
-                }
+                value={option.odds || ''}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9.]/g, '')
+                  updateOption(index, "odds", value)
+                }}
+                onFocus={(e) => {
+                  // Når feltet får fokus og værdien er 0, clear det
+                  if (e.target.value === '0' || e.target.value === '1') {
+                    e.target.value = ''
+                  }
+                }}
                 required
                 className="w-28 sm:w-24 px-3 py-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base sm:text-sm min-h-[48px] sm:min-h-[auto] touch-manipulation"
               />

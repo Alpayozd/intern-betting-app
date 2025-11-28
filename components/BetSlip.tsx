@@ -264,13 +264,28 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
                     <div className="flex items-center gap-2 w-full sm:w-auto">
                       <label className="text-xs text-gray-700">Stake:</label>
                       <input
-                        type="number"
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         min="1"
                         max={userPoints}
-                        value={selection.stakePoints}
-                        onChange={(e) =>
-                          updateStake(index, parseInt(e.target.value) || 0)
-                        }
+                        value={selection.stakePoints || ''}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^0-9]/g, '')
+                          updateStake(index, value)
+                        }}
+                        onFocus={(e) => {
+                          // Når feltet får fokus og værdien er 0, clear det
+                          if (e.target.value === '0') {
+                            e.target.value = ''
+                          }
+                        }}
+                        onBlur={(e) => {
+                          // Hvis feltet er tomt når det mister fokus, sæt til 0
+                          if (e.target.value === '') {
+                            updateStake(index, '0')
+                          }
+                        }}
                         className="w-24 sm:w-20 px-3 py-2.5 sm:px-2 sm:py-1 border border-gray-300 rounded text-base sm:text-xs min-h-[44px] sm:min-h-[auto] touch-manipulation"
                       />
                       <span className="text-xs text-gray-600">pts</span>

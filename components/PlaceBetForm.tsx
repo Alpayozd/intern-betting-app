@@ -123,11 +123,25 @@ export default function PlaceBetForm({
           </label>
           <input
             id="stakePoints"
-            type="number"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
             min="1"
             max={userPoints}
             value={stakePoints}
-            onChange={(e) => setStakePoints(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value.replace(/[^0-9]/g, '')
+              // Fjern leading zeros
+              const cleanValue = value.replace(/^0+/, '') || ''
+              setStakePoints(cleanValue)
+            }}
+            onFocus={(e) => {
+              // Når feltet får fokus og værdien er 0, clear det
+              if (e.target.value === '0') {
+                e.target.value = ''
+                setStakePoints('')
+              }
+            }}
             required
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
