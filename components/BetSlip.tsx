@@ -171,18 +171,20 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
         <button
           data-bet-slip-button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-3 rounded-lg shadow-2xl hover:bg-blue-700 active:bg-blue-800 transition-colors z-[9999] flex items-center gap-2 text-sm font-medium min-h-[56px] min-w-[80px] touch-manipulation"
+          className="fixed bottom-4 right-4 bg-blue-600 text-white px-5 py-4 rounded-full shadow-2xl hover:bg-blue-700 active:bg-blue-800 transition-colors z-[9999] flex items-center justify-center gap-2 text-base font-bold min-h-[64px] min-w-[64px] touch-manipulation"
           style={{ 
             position: 'fixed',
             bottom: '1rem',
             right: '1rem',
-            zIndex: 9999
+            zIndex: 9999,
+            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.3)'
           }}
+          aria-label="Åbn bet slip"
         >
           <span className="hidden sm:inline">Bet Slip</span>
-          <span className="sm:hidden font-bold">Slip</span>
+          <span className="sm:hidden text-lg">📋</span>
           {selections.length > 0 && (
-            <span className="bg-blue-700 px-2.5 py-1 rounded-full text-xs font-bold">
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold min-w-[24px] text-center">
               {selections.length}
             </span>
           )}
