@@ -29,32 +29,31 @@ export async function GET(
             name: true,
           },
         },
-        betOptions: {
+        betSubMarkets: {
           include: {
-            _count: {
-              select: {
-                betSelections: true,
+            betOptions: {
+              include: {
+                _count: {
+                  select: {
+                    betSelections: true,
+                  },
+                },
               },
             },
-          },
-        },
-        betSelections: {
-          where: {
-            userId: session.user.id,
-          },
-          include: {
-            betOption: true,
-          },
-        },
-        settlement: {
-          include: {
-            winningOption: true,
-            settledBy: {
+            settlement: {
+              include: {
+                winningOption: true,
+              },
+            },
+            createdBy: {
               select: {
                 id: true,
                 name: true,
               },
             },
+          },
+          orderBy: {
+            createdAt: "desc",
           },
         },
       },

@@ -59,15 +59,25 @@ export default async function GroupDetailPage({
               name: true,
             },
           },
-          betOptions: true,
-          settlement: {
+          betSubMarkets: {
             include: {
-              winningOption: true,
+              betOptions: {
+                include: {
+                  _count: {
+                    select: {
+                      betSelections: true,
+                    },
+                  },
+                },
+              },
+              settlement: {
+                include: {
+                  winningOption: true,
+                },
+              },
             },
-          },
-          _count: {
-            select: {
-              betSelections: true,
+            orderBy: {
+              createdAt: "desc",
             },
           },
         },
@@ -158,11 +168,19 @@ export default async function GroupDetailPage({
                   description: m.description,
                   status: m.status,
                   closesAt: m.closesAt,
-                  betOptions: m.betOptions,
-                  settlement: m.settlement,
+                  betSubMarkets: m.betSubMarkets.map((sm) => ({
+                    id: sm.id,
+                    title: sm.title,
+                    description: sm.description,
+                    status: sm.status,
+                    closesAt: sm.closesAt,
+                    betOptions: sm.betOptions,
+                    settlement: sm.settlement,
+                  })),
                 }))}
                 userPoints={userScore.totalPoints}
                 groupId={group.id}
+                isAdmin={isAdmin}
               />
             )}
           </div>

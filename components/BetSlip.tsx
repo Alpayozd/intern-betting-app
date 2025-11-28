@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { formatNumber } from "@/lib/format"
 
 interface BetSelection {
+  betSubMarketId: string
   betMarketId: string
   betMarketTitle: string
   betOptionId: string
@@ -36,10 +37,10 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
     const handleAddBet = (event: CustomEvent<BetSelection>) => {
       const newSelection = event.detail
       setSelections((prev) => {
-        // Tjek om den samme option allerede findes (samme market + samme option)
+        // Tjek om den samme option allerede findes (samme sub market + samme option)
         const alreadyExists = prev.find(
           (s) =>
-            s.betMarketId === newSelection.betMarketId &&
+            s.betSubMarketId === newSelection.betSubMarketId &&
             s.betOptionId === newSelection.betOptionId
         )
         
@@ -47,7 +48,7 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
         if (alreadyExists) {
           return prev.filter(
             (s) =>
-              !(s.betMarketId === newSelection.betMarketId &&
+              !(s.betSubMarketId === newSelection.betSubMarketId &&
                 s.betOptionId === newSelection.betOptionId)
           )
         }
@@ -196,7 +197,7 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
           ) : (
             <div className="divide-y">
               {selections.map((selection, index) => (
-                <div key={`${selection.betMarketId}-${selection.betOptionId}-${index}`} className="p-2 sm:p-3 hover:bg-gray-50">
+                <div key={`${selection.betSubMarketId}-${selection.betOptionId}-${index}`} className="p-2 sm:p-3 hover:bg-gray-50">
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex-1 min-w-0 pr-2">
                       <p className="font-semibold text-xs text-gray-900 truncate">

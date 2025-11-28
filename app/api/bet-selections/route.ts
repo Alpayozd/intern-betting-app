@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
 const createBetSelectionSchema = z.object({
-  betMarketId: z.string().min(1),
+  betSubMarketId: z.string().min(1),
   betOptionId: z.string().min(1),
   stakePoints: z.number().int().positive("Stake skal være positiv"),
 })
@@ -19,43 +19,47 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { betMarketId, betOptionId, stakePoints } =
+    const { betSubMarketId, betOptionId, stakePoints } =
       createBetSelectionSchema.parse(body)
 
-    // Hent bet market og valider
-    const betMarket = await prisma.betMarket.findUnique({
-      where: { id: betMarketId },
+    // Hent bet sub market og valider
+    const betSubMarket = await prisma.betSubMarket.findUnique({
+      where: { id: betSubMarketId },
       include: {
         betOptions: true,
-        group: true,
+        betMarket: {
+          include: {
+            group: true,
+          },
+        },
       },
     })
 
-    if (!betMarket) {
+    if (!betSubMarket) {
       return NextResponse.json(
-        { error: "Bet market ikke fundet" },
+        { error: "Bet sub market ikke fundet" },
         { status: 404 }
       )
     }
 
-    // Valider at bet market er åbent
-    if (betMarket.status !== "OPEN") {
+    // Valider at bet sub market er åbent
+    if (betSubMarket.status !== "OPEN") {
       return NextResponse.json(
-        { error: "Bet market er ikke åbent" },
+        { error: "Bet sub market er ikke åbent" },
         { status: 400 }
       )
     }
 
     // Valider at closesAt ikke er passeret
-    if (new Date() > betMarket.closesAt) {
+    if (new Date() > betSubMarket.closesAt) {
       return NextResponse.json(
-        { error: "Bet market er lukket" },
+        { error: "Bet sub market er lukket" },
         { status: 400 }
       )
     }
 
     // Tjek om option findes
-    const betOption = betMarket.betOptions.find(
+    const betOption = betSubMarket.betOptions.find(
       (opt) => opt.id === betOptionId
     )
     if (!betOption) {
@@ -69,7 +73,7 @@ export async function POST(request: NextRequest) {
     const membership = await prisma.groupMembership.findUnique({
       where: {
         groupId_userId: {
-          groupId: betMarket.groupId,
+          groupId: betSubMarket.betMarket.groupId,
           userId: session.user.id,
         },
       },
@@ -82,17 +86,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Hent brugerens point saldo
-    const groupScore = await prisma.groupScore.findUnique({
+    // Hent eller opret brugerens point saldo
+    let groupScore = await prisma.groupScore.findUnique({
       where: {
         groupId_userId: {
-          groupId: betMarket.groupId,
+          groupId: betSubMarket.betMarket.groupId,
           userId: session.user.id,
         },
       },
     })
 
-    if (!groupScore || groupScore.totalPoints < stakePoints) {
+    // Hvis groupScore ikke findes, opret den med 1000 start points
+    if (!groupScore) {
+      groupScore = await prisma.groupScore.create({
+        data: {
+          groupId: betSubMarket.betMarket.groupId,
+          userId: session.user.id,
+          totalPoints: 1000,
+          initialPoints: 1000,
+        },
+      })
+    }
+
+    if (groupScore.totalPoints < stakePoints) {
       return NextResponse.json(
         { error: "Utilstrækkelige points" },
         { status: 400 }
@@ -106,7 +122,7 @@ export async function POST(request: NextRequest) {
     await prisma.$transaction([
       prisma.betSelection.create({
         data: {
-          betMarketId,
+          betSubMarketId,
           betOptionId,
           userId: session.user.id,
           stakePoints,
@@ -116,7 +132,7 @@ export async function POST(request: NextRequest) {
       prisma.groupScore.update({
         where: {
           groupId_userId: {
-            groupId: betMarket.groupId,
+            groupId: betSubMarket.betMarket.groupId,
             userId: session.user.id,
           },
         },

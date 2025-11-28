@@ -8,9 +8,12 @@ interface BetOption {
   id: string
   label: string
   odds: number
+  _count?: {
+    betSelections: number
+  }
 }
 
-interface BetMarket {
+interface BetSubMarket {
   id: string
   title: string
   description?: string | null
@@ -21,19 +24,31 @@ interface BetMarket {
     winningOption: {
       label: string
     }
+    winningOptionId: string
   } | null
+}
+
+interface BetMarket {
+  id: string
+  title: string
+  description?: string | null
+  status: string
+  closesAt: Date
+  betSubMarkets: BetSubMarket[]
 }
 
 interface GroupBetMarketsProps {
   betMarkets: BetMarket[]
   userPoints: number
   groupId: string
+  isAdmin: boolean
 }
 
 export default function GroupBetMarkets({
   betMarkets,
   userPoints,
   groupId,
+  isAdmin,
 }: GroupBetMarketsProps) {
   const [isPlacing, setIsPlacing] = useState(false)
 
@@ -48,7 +63,7 @@ export default function GroupBetMarkets({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            betMarketId: selection.betMarketId,
+            betSubMarketId: selection.betSubMarketId,
             betOptionId: selection.betOptionId,
             stakePoints: selection.stakePoints,
           }),
@@ -92,6 +107,7 @@ export default function GroupBetMarkets({
                 key={market.id}
                 betMarket={market}
                 isOpen={true}
+                isAdmin={isAdmin}
               />
             ))}
           </div>
@@ -107,6 +123,7 @@ export default function GroupBetMarkets({
                 key={market.id}
                 betMarket={market}
                 isOpen={false}
+                isAdmin={isAdmin}
               />
             ))}
           </div>

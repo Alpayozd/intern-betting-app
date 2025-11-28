@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import CreateBetSubMarketForm from "./CreateBetSubMarketForm"
 
 interface BetOption {
   id: string
@@ -11,7 +12,7 @@ interface BetOption {
   }
 }
 
-interface BetMarket {
+interface BetSubMarket {
   id: string
   title: string
   description?: string | null
@@ -22,36 +23,52 @@ interface BetMarket {
     winningOption: {
       label: string
     }
+    winningOptionId: string
   } | null
 }
 
+interface BetMarket {
+  id: string
+  title: string
+  description?: string | null
+  status: string
+  closesAt: Date
+  betSubMarkets: BetSubMarket[]
+}
+
 interface BetSelection {
-  betMarketId: string
+  betSubMarketId: string
   betOptionId: string
 }
 
 interface BetMarketCardProps {
   betMarket: BetMarket
   isOpen: boolean
+  isAdmin?: boolean
 }
 
 export default function BetMarketCard({
   betMarket,
   isOpen,
+  isAdmin = false,
 }: BetMarketCardProps) {
-  const [selectedOptionIds, setSelectedOptionIds] = useState<Set<string>>(new Set())
+  const [selectedOptions, setSelectedOptions] = useState<Map<string, Set<string>>>(new Map())
 
   // Lyt til opdateringer fra bet slip
   useEffect(() => {
     const handleSelectionsUpdate = (event: CustomEvent<BetSelection[]>) => {
       const selections = event.detail
-      // Find alle valgte options fra dette market
-      const selectionsForThisMarket = selections.filter(
-        (s) => s.betMarketId === betMarket.id
-      )
-      setSelectedOptionIds(
-        new Set(selectionsForThisMarket.map((s) => s.betOptionId))
-      )
+      const newMap = new Map<string, Set<string>>()
+      
+      // Gruppér selections efter betSubMarketId
+      selections.forEach((s) => {
+        if (!newMap.has(s.betSubMarketId)) {
+          newMap.set(s.betSubMarketId, new Set())
+        }
+        newMap.get(s.betSubMarketId)!.add(s.betOptionId)
+      })
+      
+      setSelectedOptions(newMap)
     }
 
     window.addEventListener(
@@ -64,16 +81,20 @@ export default function BetMarketCard({
         handleSelectionsUpdate as EventListener
       )
     }
-  }, [betMarket.id])
+  }, [])
 
-  const handleOptionClick = (option: BetOption) => {
+  const handleOptionClick = (subMarket: BetSubMarket, option: BetOption) => {
     if (!isOpen) return
+
+    const isSubMarketOpen = subMarket.status === "OPEN" && new Date() < new Date(subMarket.closesAt)
+    if (!isSubMarketOpen) return
 
     // Send custom event til BetSlip
     const event = new CustomEvent("addToBetSlip", {
       detail: {
+        betSubMarketId: subMarket.id,
         betMarketId: betMarket.id,
-        betMarketTitle: betMarket.title,
+        betMarketTitle: `${betMarket.title} - ${subMarket.title}`,
         betOptionId: option.id,
         betOptionLabel: option.label,
         odds: option.odds,
@@ -82,17 +103,6 @@ export default function BetMarketCard({
       },
     })
     window.dispatchEvent(event)
-    
-    // Opdater lokal state (toggle)
-    setSelectedOptionIds((prev) => {
-      const newSet = new Set(prev)
-      if (newSet.has(option.id)) {
-        newSet.delete(option.id)
-      } else {
-        newSet.add(option.id)
-      }
-      return newSet
-    })
   }
 
   const isSettled = betMarket.status === "SETTLED"
@@ -129,83 +139,154 @@ export default function BetMarketCard({
                 ? "Afgjort"
                 : "Lukket"}
             </span>
-            {betMarket.settlement && (
-              <div className="mt-2 text-xs text-gray-600">
-                Vinder: {betMarket.settlement.winningOption.label}
-              </div>
-            )}
           </div>
         </div>
         {betMarket.status === "OPEN" && !isClosed && (
           <div className="mt-2 text-xs text-gray-500">
-            Lukker: {new Date(betMarket.closesAt).toLocaleString("da-DK")}
+            Event lukker: {new Date(betMarket.closesAt).toLocaleString("da-DK")}
           </div>
         )}
       </div>
 
-      {/* Options */}
+      {/* Bet Sub Markets */}
       <div className="p-3 sm:p-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
-          {betMarket.betOptions.map((option) => {
-            const isWinner =
-              betMarket.settlement?.winningOption.label === option.label
-            const isSelected = selectedOptionIds.has(option.id)
-            return (
-              <button
-                key={option.id}
-                onClick={() => handleOptionClick(option)}
-                disabled={!isOpen || isSettled || isClosed}
-                className={`p-3 rounded-lg border-2 transition-all text-left ${
-                  isWinner
-                    ? "bg-green-50 border-green-300"
-                    : isSelected
-                    ? "bg-blue-100 border-blue-500"
-                    : isOpen && !isSettled && !isClosed
-                    ? "border-gray-300 hover:border-blue-500 hover:bg-blue-50 cursor-pointer"
-                    : "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
-                }`}
-              >
-                <div className="flex justify-between items-center">
-                  <span
-                    className={`font-medium text-sm ${
-                      isWinner ? "text-green-800" : isSelected ? "text-blue-800" : "text-gray-900"
-                    }`}
-                  >
-                    {option.label}
-                    {isSelected && !isWinner && (
-                      <span className="ml-2 text-blue-700 font-semibold">✓ Valgt</span>
+        {isAdmin && isOpen && (
+          <div className="mb-4">
+            <CreateBetSubMarketForm betMarketId={betMarket.id} />
+          </div>
+        )}
+
+        {betMarket.betSubMarkets.length === 0 ? (
+          <div className="text-center text-gray-500 py-8">
+            <p className="text-sm">Ingen bets endnu</p>
+            {isAdmin && (
+              <p className="text-xs mt-1">Klik på "Tilføj Bet" for at oprette et bet</p>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {betMarket.betSubMarkets.map((subMarket) => {
+              const isSubMarketSettled = subMarket.status === "SETTLED"
+              const isSubMarketClosed =
+                subMarket.status === "CLOSED" || new Date() > new Date(subMarket.closesAt)
+              const isSubMarketOpen = subMarket.status === "OPEN" && !isSubMarketClosed
+              const selectedOptionIds = selectedOptions.get(subMarket.id) || new Set()
+
+              return (
+                <div
+                  key={subMarket.id}
+                  className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-gray-50"
+                >
+                  <div className="mb-3">
+                    <div className="flex justify-between items-start mb-1">
+                      <h4 className="font-semibold text-gray-900 text-sm sm:text-base">
+                        {subMarket.title}
+                      </h4>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          isSubMarketOpen
+                            ? "bg-green-100 text-green-800"
+                            : isSubMarketSettled
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {isSubMarketOpen
+                          ? "Åben"
+                          : isSubMarketSettled
+                          ? "Afgjort"
+                          : "Lukket"}
+                      </span>
+                    </div>
+                    {subMarket.description && (
+                      <p className="text-xs text-gray-600 mt-1">
+                        {subMarket.description}
+                      </p>
                     )}
-                    {isWinner && (
-                      <span className="ml-2 text-green-700">✓ Vinder</span>
+                    {isSubMarketOpen && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Lukker: {new Date(subMarket.closesAt).toLocaleString("da-DK")}
+                      </p>
                     )}
-                  </span>
-                  <div className="text-right">
-                    <span
-                      className={`font-bold text-lg ${
-                        isWinner
-                          ? "text-green-700"
-                          : isSelected
-                          ? "text-blue-700"
-                          : isOpen && !isSettled && !isClosed
-                          ? "text-blue-600"
-                          : "text-gray-500"
-                      }`}
-                    >
-                      {option.odds.toFixed(2)}
-                    </span>
-                    {option._count && (
-                      <div className="text-xs text-gray-500 mt-1">
-                        ({option._count.betSelections} bets)
-                      </div>
+                    {subMarket.settlement && (
+                      <p className="text-xs text-green-700 mt-1 font-medium">
+                        Vinder: {subMarket.settlement.winningOption.label}
+                      </p>
                     )}
                   </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                    {subMarket.betOptions.map((option) => {
+                      const isWinner =
+                        subMarket.settlement?.winningOptionId === option.id
+                      const isSelected = selectedOptionIds.has(option.id)
+
+                      return (
+                        <button
+                          key={option.id}
+                          onClick={() => handleOptionClick(subMarket, option)}
+                          disabled={!isSubMarketOpen}
+                          className={`p-3 rounded-lg border-2 transition-all text-left ${
+                            isWinner
+                              ? "bg-green-50 border-green-300"
+                              : isSelected
+                              ? "bg-blue-100 border-blue-500"
+                              : isSubMarketOpen
+                              ? "border-gray-300 hover:border-blue-500 hover:bg-blue-50 cursor-pointer"
+                              : "border-gray-200 bg-gray-50 cursor-not-allowed opacity-60"
+                          }`}
+                        >
+                          <div className="flex justify-between items-center">
+                            <span
+                              className={`font-medium text-sm ${
+                                isWinner
+                                  ? "text-green-800"
+                                  : isSelected
+                                  ? "text-blue-800"
+                                  : "text-gray-900"
+                              }`}
+                            >
+                              {option.label}
+                              {isSelected && !isWinner && (
+                                <span className="ml-2 text-blue-700 font-semibold">
+                                  ✓ Valgt
+                                </span>
+                              )}
+                              {isWinner && (
+                                <span className="ml-2 text-green-700">✓ Vinder</span>
+                              )}
+                            </span>
+                            <div className="text-right">
+                              <span
+                                className={`font-bold text-lg ${
+                                  isWinner
+                                    ? "text-green-700"
+                                    : isSelected
+                                    ? "text-blue-700"
+                                    : isSubMarketOpen
+                                    ? "text-blue-600"
+                                    : "text-gray-500"
+                                }`}
+                              >
+                                {option.odds.toFixed(2)}
+                              </span>
+                              {option._count && (
+                                <div className="text-xs text-gray-500 mt-1">
+                                  ({option._count.betSelections} bets)
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
-              </button>
-            )
-          })}
-        </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )
 }
-
