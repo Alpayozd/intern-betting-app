@@ -56,15 +56,22 @@ export default function CreateBetSubMarketForm({
     setIsSubmitting(true)
 
     try {
+      // Valider betMarketId først
+      if (!betMarketId || betMarketId.trim() === '') {
+        alert("Fejl: BetMarket ID mangler. Prøv at opdatere siden.")
+        setIsSubmitting(false)
+        return
+      }
+      
       const requestBody = {
-        betMarketId: betMarketId,
+        betMarketId: betMarketId.trim(),
         title: title.trim(),
         description: description.trim() || undefined,
         closesAt: new Date(closesAt).toISOString(),
         betOptions: options.filter((opt) => opt.label.trim() !== ""),
       }
       
-      console.log("Creating bet sub market with:", { betMarketId, title })
+      console.log("Creating bet sub market with:", requestBody)
       
       const response = await fetch("/api/bet-sub-markets", {
         method: "POST",
