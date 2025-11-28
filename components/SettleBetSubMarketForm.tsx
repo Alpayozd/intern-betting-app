@@ -81,6 +81,9 @@ export default function SettleBetSubMarketForm({
   // Debug: Log betOptions
   if (typeof window !== 'undefined') {
     console.log('SettleBetSubMarketForm - betOptions:', betOptions)
+    console.log('SettleBetSubMarketForm - betOptions type:', typeof betOptions)
+    console.log('SettleBetSubMarketForm - betOptions isArray:', Array.isArray(betOptions))
+    console.log('SettleBetSubMarketForm - betOptions length:', betOptions?.length)
   }
 
   return (

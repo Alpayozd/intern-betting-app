@@ -179,7 +179,12 @@ export default async function GroupDetailPage({
                     status: sm.status,
                     closesAt: sm.closesAt,
                     allowMultipleBets: sm.allowMultipleBets,
-                    betOptions: sm.betOptions,
+                    betOptions: sm.betOptions.map((opt) => ({
+                      id: opt.id,
+                      label: opt.label,
+                      odds: opt.odds,
+                      _count: opt._count,
+                    })),
                     settlement: sm.settlement,
                   })),
                 }))}

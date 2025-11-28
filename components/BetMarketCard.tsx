@@ -263,31 +263,33 @@ export default function BetMarketCard({
                         </>
                       )}
                       {/* Vis bettingmuligheder for admin */}
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                        <h5 className="text-xs font-semibold text-blue-900 mb-2">
-                          Bettingmuligheder (Admin Oversigt)
-                        </h5>
-                        <div className="space-y-1">
-                          {subMarket.betOptions.map((option) => (
-                            <div
-                              key={option.id}
-                              className="flex justify-between items-center text-xs"
-                            >
-                              <span className="text-gray-700">{option.label}</span>
-                              <div className="flex items-center gap-2">
-                                <span className="font-semibold text-blue-700">
-                                  Odds: {option.odds.toFixed(2)}
-                                </span>
-                                {option._count && (
-                                  <span className="text-gray-500">
-                                    ({option._count.betSelections} bets)
+                      {subMarket.betOptions && subMarket.betOptions.length > 0 && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                          <h5 className="text-xs font-semibold text-blue-900 mb-2">
+                            Bettingmuligheder (Admin Oversigt)
+                          </h5>
+                          <div className="space-y-1">
+                            {subMarket.betOptions.map((option) => (
+                              <div
+                                key={option.id}
+                                className="flex justify-between items-center text-xs"
+                              >
+                                <span className="text-gray-700">{option.label}</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-blue-700">
+                                    Odds: {option.odds.toFixed(2)}
                                   </span>
-                                )}
+                                  {option._count && (
+                                    <span className="text-gray-500">
+                                      ({option._count.betSelections} bets)
+                                    </span>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   )}
 
