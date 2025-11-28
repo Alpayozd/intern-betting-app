@@ -114,7 +114,7 @@ model BetOption {
 
   betSubMarket       BetSubMarket        @relation(fields: [betSubMarketId], references: [id], onDelete: Cascade)
   betSelections      BetSelection[]
-  winningSettlements  BetSubMarketSettlement[]
+  winningOptions     WinningOption[]
 
   @@index([betSubMarketId])
 }
@@ -140,15 +140,27 @@ model BetSelection {
 model BetSubMarketSettlement {
   id              String   @id @default(cuid())
   betSubMarketId  String   @unique
-  winningOptionId String
   settledAt       DateTime @default(now())
   settledByUserId String
 
   betSubMarket    BetSubMarket  @relation(fields: [betSubMarketId], references: [id], onDelete: Cascade)
-  winningOption   BetOption     @relation(fields: [winningOptionId], references: [id])
   settledBy       User          @relation("SettledSubMarketBy", fields: [settledByUserId], references: [id])
+  winningOptions  WinningOption[]
 
   @@index([betSubMarketId])
+}
+
+model WinningOption {
+  id                    String   @id @default(cuid())
+  betSubMarketSettlementId String
+  betOptionId           String
+
+  settlement            BetSubMarketSettlement @relation(fields: [betSubMarketSettlementId], references: [id], onDelete: Cascade)
+  betOption             BetOption              @relation(fields: [betOptionId], references: [id], onDelete: Cascade)
+
+  @@unique([betSubMarketSettlementId, betOptionId])
+  @@index([betSubMarketSettlementId])
+  @@index([betOptionId])
 }
 
 model GroupScore {

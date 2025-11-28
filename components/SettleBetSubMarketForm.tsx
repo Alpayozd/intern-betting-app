@@ -21,16 +21,26 @@ export default function SettleBetSubMarketForm({
   isSettled,
 }: SettleBetSubMarketFormProps) {
   const router = useRouter()
-  const [winningOptionId, setWinningOptionId] = useState("")
+  const [winningOptionIds, setWinningOptionIds] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
+
+  const handleOptionToggle = (optionId: string) => {
+    setWinningOptionIds((prev) => {
+      if (prev.includes(optionId)) {
+        return prev.filter((id) => id !== optionId)
+      } else {
+        return [...prev, optionId]
+      }
+    })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
 
-    if (!winningOptionId) {
-      setError("Vælg en vinder")
+    if (winningOptionIds.length === 0) {
+      setError("Vælg mindst én vinder")
       return
     }
 
@@ -44,7 +54,7 @@ export default function SettleBetSubMarketForm({
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ winningOptionId }),
+          body: JSON.stringify({ winningOptionIds }),
         }
       )
 
@@ -80,22 +90,30 @@ export default function SettleBetSubMarketForm({
       )}
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">
-            Vælg vinder:
+          <label className="block text-xs font-medium text-gray-700 mb-2">
+            Vælg vinder(e) (kan vælge flere):
           </label>
-          <select
-            value={winningOptionId}
-            onChange={(e) => setWinningOptionId(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-            required
-          >
-            <option value="">-- Vælg vinder --</option>
-            {betOptions.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label} (Odds: {option.odds.toFixed(2)})
-              </option>
-            ))}
-          </select>
+          <div className="space-y-2">
+            {betOptions.map((option) => {
+              const isSelected = winningOptionIds.includes(option.id)
+              return (
+                <label
+                  key={option.id}
+                  className="flex items-center gap-2 p-2 border rounded-md cursor-pointer hover:bg-gray-50"
+                >
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => handleOptionToggle(option.id)}
+                    className="w-4 h-4 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500"
+                  />
+                  <span className="text-sm text-gray-700">
+                    {option.label} (Odds: {option.odds.toFixed(2)})
+                  </span>
+                </label>
+              )
+            })}
+          </div>
         </div>
         <button
           type="submit"

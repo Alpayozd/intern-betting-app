@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
 const settleBetSubMarketSchema = z.object({
-  winningOptionId: z.string().min(1),
+  winningOptionIds: z.array(z.string().min(1)).min(1, "Mindst én vinder skal vælges"),
 })
 
 // POST - Afgør et BetSubMarket
@@ -20,7 +20,7 @@ export async function POST(
     }
 
     const body = await request.json()
-    const { winningOptionId } = settleBetSubMarketSchema.parse(body)
+    const { winningOptionIds } = settleBetSubMarketSchema.parse(body)
 
     // Hent bet sub market
     const betSubMarket = await prisma.betSubMarket.findUnique({
@@ -36,7 +36,15 @@ export async function POST(
           },
         },
         betOptions: true,
-        settlement: true,
+        settlement: {
+          include: {
+            winningOptions: {
+              include: {
+                betOption: true,
+              },
+            },
+          },
+        },
       },
     })
 
@@ -67,22 +75,24 @@ export async function POST(
       )
     }
 
-    // Tjek om option findes
-    const winningOption = betSubMarket.betOptions.find(
-      (opt) => opt.id === winningOptionId
+    // Tjek om alle options findes
+    const winningOptions = betSubMarket.betOptions.filter(
+      (opt) => winningOptionIds.includes(opt.id)
     )
-    if (!winningOption) {
+    if (winningOptions.length !== winningOptionIds.length) {
       return NextResponse.json(
-        { error: "Winning option ikke fundet" },
+        { error: "En eller flere winning options ikke fundet" },
         { status: 404 }
       )
     }
 
-    // Hent alle vinder bets
+    // Hent alle vinder bets (fra alle vindende options)
     const winningBets = await prisma.betSelection.findMany({
       where: {
         betSubMarketId: params.betSubMarketId,
-        betOptionId: winningOptionId,
+        betOptionId: {
+          in: winningOptionIds,
+        },
       },
       include: {
         user: true,
@@ -91,12 +101,16 @@ export async function POST(
 
     // Opdater points og opret settlement i en transaktion
     await prisma.$transaction(async (tx) => {
-      // Opret settlement
-      await tx.betSubMarketSettlement.create({
+      // Opret settlement med flere vindende options
+      const settlement = await tx.betSubMarketSettlement.create({
         data: {
           betSubMarketId: params.betSubMarketId,
-          winningOptionId,
           settledByUserId: session.user.id,
+          winningOptions: {
+            create: winningOptionIds.map((optionId) => ({
+              betOptionId: optionId,
+            })),
+          },
         },
       })
 
