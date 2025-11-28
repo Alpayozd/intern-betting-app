@@ -1,5 +1,6 @@
 -- Fix BetOption tabel - opdater fra betMarketId til betSubMarketId
 -- Kør denne SQL i Supabase SQL Editor
+-- ADVARSEL: Dette vil slette alle eksisterende BetOptions hvis der er nogen!
 
 -- Først, tjek om betMarketId kolonne findes
 DO $$ 
@@ -12,15 +13,12 @@ BEGIN
     ) THEN
         RAISE NOTICE 'betMarketId kolonne findes - starter migration...';
         
-        -- Hvis betSubMarketId kolonne ikke findes, tilføj den
-        IF NOT EXISTS (
-            SELECT 1 FROM information_schema.columns 
-            WHERE table_name = 'BetOption' 
-            AND column_name = 'betSubMarketId'
-        ) THEN
-            -- Tilføj betSubMarketId kolonne
-            ALTER TABLE "BetOption" ADD COLUMN "betSubMarketId" TEXT;
-            RAISE NOTICE 'betSubMarketId kolonne tilføjet';
+        -- ADVARSEL: Hvis der er eksisterende data, skal vi slette dem
+        -- da vi ikke kan migrere fra betMarketId til betSubMarketId automatisk
+        IF EXISTS (SELECT 1 FROM "BetOption" LIMIT 1) THEN
+            RAISE NOTICE 'ADVARSEL: Der er eksisterende data i BetOption. Sletter dem...';
+            DELETE FROM "BetOption";
+            RAISE NOTICE 'Eksisterende BetOptions slettet';
         END IF;
         
         -- Slet betMarketId foreign key constraint hvis den findes
