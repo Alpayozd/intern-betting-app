@@ -88,10 +88,20 @@ export default function BetMarketCard({
   }, [])
 
   const handleOptionClick = (subMarket: BetSubMarket, option: BetOption) => {
-    if (!isOpen) return
+    if (!isOpen) {
+      console.log('Bet market is not open')
+      return
+    }
 
     const isSubMarketOpen = subMarket.status === "OPEN" && new Date() < new Date(subMarket.closesAt)
-    if (!isSubMarketOpen) return
+    if (!isSubMarketOpen) {
+      console.log('Sub market is not open:', {
+        status: subMarket.status,
+        closesAt: subMarket.closesAt,
+        now: new Date()
+      })
+      return
+    }
 
     // Send custom event til BetSlip
     const event = new CustomEvent("addToBetSlip", {
@@ -108,6 +118,7 @@ export default function BetMarketCard({
       },
     })
     window.dispatchEvent(event)
+    console.log('Bet option clicked:', option.label)
   }
 
   const isSettled = betMarket.status === "SETTLED"

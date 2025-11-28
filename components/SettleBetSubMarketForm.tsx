@@ -78,6 +78,11 @@ export default function SettleBetSubMarketForm({
     return null // Vis ikke form hvis allerede afgjort
   }
 
+  // Debug: Log betOptions
+  if (typeof window !== 'undefined') {
+    console.log('SettleBetSubMarketForm - betOptions:', betOptions)
+  }
+
   return (
     <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
       <h5 className="text-sm font-semibold text-yellow-900 mb-2">
@@ -93,9 +98,13 @@ export default function SettleBetSubMarketForm({
           <label className="block text-xs font-medium text-gray-700 mb-2">
             Vælg vinder(e) (kan vælge flere):
           </label>
-          {betOptions && betOptions.length > 0 ? (
+          {betOptions && Array.isArray(betOptions) && betOptions.length > 0 ? (
             <div className="space-y-2">
               {betOptions.map((option) => {
+                if (!option || !option.id) {
+                  console.warn('Invalid option:', option)
+                  return null
+                }
                 const isSelected = winningOptionIds.includes(option.id)
                 return (
                   <label
@@ -109,14 +118,17 @@ export default function SettleBetSubMarketForm({
                       className="w-4 h-4 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500"
                     />
                     <span className="text-sm text-gray-700">
-                      {option.label} (Odds: {option.odds.toFixed(2)})
+                      {option.label || 'Ingen label'} (Odds: {option.odds ? option.odds.toFixed(2) : 'N/A'})
                     </span>
                   </label>
                 )
               })}
             </div>
           ) : (
-            <p className="text-xs text-gray-500">Ingen options tilgængelige</p>
+            <div className="text-xs text-gray-500 p-2 bg-gray-100 rounded">
+              <p>Ingen options tilgængelige</p>
+              <p className="text-xs mt-1">betOptions: {betOptions ? JSON.stringify(betOptions) : 'undefined'}</p>
+            </div>
           )}
         </div>
         <button
