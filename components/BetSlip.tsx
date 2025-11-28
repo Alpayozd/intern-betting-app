@@ -274,8 +274,8 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
                         min="1"
                         max={userPoints}
                         value={selection.stakePoints || ''}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/[^0-9]/g, '')
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          const value: string = e.target.value.replace(/[^0-9]/g, '')
                           updateStake(index, value)
                         }}
                         onFocus={(e) => {
