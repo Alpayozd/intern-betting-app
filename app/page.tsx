@@ -12,8 +12,9 @@ export default async function Home() {
     redirect("/login")
   }
 
-  // Hent brugerens grupper og seneste bet markets
-  const groups = await prisma.group.findMany({
+  try {
+    // Hent brugerens grupper og seneste bet markets
+    const groups = await prisma.group.findMany({
     where: {
       memberships: {
         some: {
@@ -57,7 +58,7 @@ export default async function Home() {
     },
   })
 
-  return (
+    return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8 pb-24 sm:pb-32">
@@ -150,6 +151,27 @@ export default async function Home() {
         </div>
       </main>
     </div>
-  )
+    )
+  } catch (error: any) {
+    console.error("Home page error:", error)
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <main className="max-w-7xl mx-auto px-4 py-8">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <h1 className="text-xl font-bold text-red-800 mb-2">Fejl</h1>
+            <p className="text-red-600">
+              Der opstod en fejl ved indlæsning af siden. Prøv at opdatere siden.
+            </p>
+            {process.env.NODE_ENV === "development" && (
+              <pre className="mt-4 text-xs text-red-700 bg-red-100 p-2 rounded overflow-auto">
+                {error?.message || String(error)}
+              </pre>
+            )}
+          </div>
+        </main>
+      </div>
+    )
+  }
 }
 
