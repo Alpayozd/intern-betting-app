@@ -84,19 +84,19 @@ export default async function Home() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">Mine Grupper</h2>
+          <div className="bg-white rounded-lg shadow-lg border-2 border-gray-200 p-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Mine Grupper</h2>
             {groups.length === 0 ? (
-              <p className="text-gray-500 mb-4">
+              <p className="text-gray-700 mb-4 text-base">
                 Du er ikke medlem af nogen grupper endnu.
               </p>
             ) : (
-              <ul className="space-y-2">
+              <ul className="space-y-3">
                 {groups.map((group) => (
                   <li key={group.id}>
                     <Link
                       href={`/groups/${group.id}`}
-                      className="text-blue-600 hover:text-blue-800 font-medium"
+                      className="text-blue-700 hover:text-blue-900 font-semibold text-base sm:text-lg"
                     >
                       {group.name}
                     </Link>
@@ -106,37 +106,37 @@ export default async function Home() {
             )}
             <Link
               href="/groups"
-              className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+              className="mt-4 inline-block bg-blue-600 text-white px-5 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold text-base shadow-md"
             >
               Se alle grupper
             </Link>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">Seneste Bet Markets</h2>
+          <div className="bg-white rounded-lg shadow-lg border-2 border-gray-200 p-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Seneste Bet Markets</h2>
             {recentBetMarkets.length === 0 ? (
-              <p className="text-gray-500">
+              <p className="text-gray-700 text-base">
                 Ingen bet markets endnu. Opret en gruppe og start at bette!
               </p>
             ) : (
               <ul className="space-y-3">
                 {recentBetMarkets.map((market) => (
-                  <li key={market.id} className="border-b pb-3 last:border-0">
+                  <li key={market.id} className="border-b-2 border-gray-200 pb-3 last:border-0">
                     <Link
                       href={`/bet-markets/${market.id}`}
-                      className="block hover:text-blue-600 transition-colors"
+                      className="block hover:text-blue-700 transition-colors"
                     >
-                      <div className="font-medium">{market.title}</div>
-                      <div className="text-sm text-gray-500">
+                      <div className="font-semibold text-gray-900 text-base sm:text-lg">{market.title}</div>
+                      <div className="text-sm sm:text-base text-gray-700 mt-1">
                         {market.group.name} •{" "}
                         <span
-                          className={
+                          className={`font-semibold ${
                             market.status === "OPEN"
-                              ? "text-green-600"
+                              ? "text-green-700"
                               : market.status === "SETTLED"
-                              ? "text-blue-600"
-                              : "text-gray-600"
-                          }
+                              ? "text-blue-700"
+                              : "text-gray-700"
+                          }`}
                         >
                           {market.status === "OPEN"
                             ? "Åben"
@@ -153,8 +153,8 @@ export default async function Home() {
           </div>
         </div>
 
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <p className="text-sm text-yellow-800">
+        <div className="bg-yellow-600 text-white rounded-lg p-5 sm:p-6 shadow-lg border-2 border-yellow-700">
+          <p className="text-base sm:text-lg font-semibold">
             <strong>⚠️ Vigtigt:</strong> Denne app er kun til underholdning.
             Der handles ikke med rigtige penge, og alt sker med virtuelle
             points.
@@ -169,9 +169,9 @@ export default async function Home() {
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <main className="max-w-7xl mx-auto px-4 py-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <h1 className="text-xl font-bold text-red-800 mb-2">Fejl</h1>
-            <p className="text-red-600">
+          <div className="bg-red-600 text-white rounded-lg p-5 sm:p-6 shadow-lg border-2 border-red-700">
+            <h1 className="text-xl sm:text-2xl font-bold mb-2">Fejl</h1>
+            <p className="text-base sm:text-lg">
               Der opstod en fejl ved indlæsning af siden. Prøv at opdatere siden.
             </p>
             {process.env.NODE_ENV === "development" && (

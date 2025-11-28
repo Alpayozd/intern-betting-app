@@ -127,28 +127,28 @@ export default function BetMarketCard({
   const isClosed = betMarket.status === "CLOSED" || new Date() > new Date(betMarket.closesAt)
 
   return (
-    <div className="bg-white rounded-lg shadow-md border border-gray-200 mb-4">
+    <div className="bg-white rounded-lg shadow-lg border-2 border-gray-200 mb-4">
       {/* Header */}
-      <div className="p-3 sm:p-4 border-b bg-gray-50">
+      <div className="p-3 sm:p-4 border-b-2 border-gray-200 bg-gray-50">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
           <div className="flex-1">
             <h3 className="font-semibold text-gray-900 text-base sm:text-lg">
               {betMarket.title}
             </h3>
             {betMarket.description && (
-              <p className="text-xs sm:text-sm text-gray-600 mt-1">
+              <p className="text-xs sm:text-sm text-gray-700 mt-1 font-medium">
                 {betMarket.description}
               </p>
             )}
           </div>
           <div className="sm:ml-4 sm:text-right">
             <span
-              className={`px-3 py-1 rounded-full text-xs font-medium ${
+              className={`px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold ${
                 betMarket.status === "OPEN" && !isClosed
-                  ? "bg-green-100 text-green-800"
+                  ? "bg-green-600 text-white"
                   : betMarket.status === "SETTLED"
-                  ? "bg-blue-100 text-blue-800"
-                  : "bg-gray-100 text-gray-800"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-600 text-white"
               }`}
             >
               {betMarket.status === "OPEN" && !isClosed
@@ -160,7 +160,7 @@ export default function BetMarketCard({
           </div>
         </div>
         {betMarket.status === "OPEN" && !isClosed && (
-          <div className="mt-2 text-xs text-gray-500">
+          <div className="mt-2 text-xs sm:text-sm text-gray-700 font-medium">
             Event lukker: {new Date(betMarket.closesAt).toLocaleString("da-DK")}
           </div>
         )}
@@ -181,10 +181,10 @@ export default function BetMarketCard({
         )}
 
         {betMarket.betSubMarkets.length === 0 ? (
-          <div className="text-center text-gray-500 py-8">
-            <p className="text-sm">Ingen bets endnu</p>
+          <div className="text-center text-gray-700 py-8">
+            <p className="text-base sm:text-sm font-medium">Ingen bets endnu</p>
             {isAdmin && (
-              <p className="text-xs mt-1">Klik på "Tilføj Bet" for at oprette et bet</p>
+              <p className="text-sm sm:text-xs mt-1 font-medium">Klik på "Tilføj Bet" for at oprette et bet</p>
             )}
           </div>
         ) : (
@@ -201,7 +201,7 @@ export default function BetMarketCard({
               return (
                 <div
                   key={subMarket.id}
-                  className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-gray-50"
+                  className="border-2 border-gray-300 rounded-lg p-3 sm:p-4 bg-gray-50"
                 >
                   <div className="mb-3">
                     <div className="flex justify-between items-start mb-1">
@@ -209,12 +209,12 @@ export default function BetMarketCard({
                         {subMarket.title}
                       </h4>
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        className={`px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold ${
                           isSubMarketOpen
-                            ? "bg-green-100 text-green-800"
+                            ? "bg-green-600 text-white"
                             : isSubMarketSettled
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-gray-100 text-gray-800"
+                            ? "bg-blue-600 text-white"
+                            : "bg-gray-600 text-white"
                         }`}
                       >
                         {isSubMarketOpen
@@ -225,17 +225,17 @@ export default function BetMarketCard({
                       </span>
                     </div>
                     {subMarket.description && (
-                      <p className="text-xs text-gray-600 mt-1">
+                      <p className="text-xs sm:text-sm text-gray-700 mt-1 font-medium">
                         {subMarket.description}
                       </p>
                     )}
                     {isSubMarketOpen && (
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs sm:text-sm text-gray-700 mt-1 font-medium">
                         Lukker: {new Date(subMarket.closesAt).toLocaleString("da-DK")}
                       </p>
                     )}
                     {subMarket.settlement && subMarket.settlement.winningOptions && subMarket.settlement.winningOptions.length > 0 && (
-                      <p className="text-xs text-green-700 mt-1 font-medium">
+                      <p className="text-xs sm:text-sm text-green-700 mt-1 font-bold">
                         Vinder(e): {subMarket.settlement.winningOptions.map(wo => wo.betOption.label).join(", ")}
                       </p>
                     )}
@@ -264,23 +264,23 @@ export default function BetMarketCard({
                       )}
                       {/* Vis bettingmuligheder for admin */}
                       {subMarket.betOptions && subMarket.betOptions.length > 0 && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                          <h5 className="text-xs font-semibold text-blue-900 mb-2">
+                        <div className="bg-blue-100 border-2 border-blue-400 rounded-lg p-3">
+                          <h5 className="text-xs sm:text-sm font-bold text-blue-900 mb-2">
                             Bettingmuligheder (Admin Oversigt)
                           </h5>
                           <div className="space-y-1">
                             {subMarket.betOptions.map((option) => (
                               <div
                                 key={option.id}
-                                className="flex justify-between items-center text-xs"
+                                className="flex justify-between items-center text-xs sm:text-sm"
                               >
-                                <span className="text-gray-700">{option.label}</span>
+                                <span className="text-gray-900 font-semibold">{option.label}</span>
                                 <div className="flex items-center gap-2">
-                                  <span className="font-semibold text-blue-700">
+                                  <span className="font-bold text-blue-800">
                                     Odds: {option.odds.toFixed(2)}
                                   </span>
                                   {option._count && (
-                                    <span className="text-gray-500">
+                                    <span className="text-gray-700 font-medium">
                                       ({option._count.betSelections} bets)
                                     </span>
                                   )}
@@ -352,7 +352,7 @@ export default function BetMarketCard({
                                 {option.odds.toFixed(2)}
                               </span>
                               {option._count && (
-                                <div className="text-xs text-gray-500 mt-1">
+                                <div className="text-xs sm:text-sm text-gray-700 mt-1 font-medium">
                                   ({option._count.betSelections} bets)
                                 </div>
                               )}

@@ -131,12 +131,12 @@ export default async function BetMarketDetailPage({
           )}
           <div className="mt-4 flex items-center gap-4">
             <span
-              className={`px-3 py-1 rounded-full text-sm font-medium ${
+              className={`px-4 py-2 rounded-full text-sm sm:text-base font-semibold ${
                 betMarket.status === "OPEN"
-                  ? "bg-green-100 text-green-800"
+                  ? "bg-green-600 text-white"
                   : betMarket.status === "SETTLED"
-                  ? "bg-blue-100 text-blue-800"
-                  : "bg-gray-100 text-gray-800"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-600 text-white"
               }`}
             >
               {betMarket.status === "OPEN"
@@ -145,7 +145,7 @@ export default async function BetMarketDetailPage({
                 ? "Afgjort"
                 : "Lukket"}
             </span>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm sm:text-base text-gray-700 font-semibold">
               Lukker: {new Date(betMarket.closesAt).toLocaleString("da-DK")}
             </span>
           </div>
