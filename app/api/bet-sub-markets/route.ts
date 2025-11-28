@@ -175,15 +175,31 @@ export async function POST(request: NextRequest) {
         },
       }
       
-      console.log("Prisma create data:", {
-        ...prismaData,
-        betMarketId: prismaData.betMarketId,
-        betMarketIdType: typeof prismaData.betMarketId,
-        betMarketIdLength: prismaData.betMarketId.length
+      // Log for debugging (uden at inkludere ekstra felter i selve data objektet)
+      console.log("Prisma create data:", JSON.stringify(prismaData, null, 2))
+      console.log("betMarketId check:", {
+        value: prismaData.betMarketId,
+        type: typeof prismaData.betMarketId,
+        length: prismaData.betMarketId?.length,
+        isNull: prismaData.betMarketId === null,
+        isUndefined: prismaData.betMarketId === undefined
       })
       
+      // Eksplicit konstruer data objektet igen for at sikre ingen ekstra felter
       const subMarket = await tx.betSubMarket.create({
-        data: prismaData,
+        data: {
+          betMarketId: String(finalBetMarketId), // Eksplicit string konvertering
+          title: String(title.trim()),
+          description: description?.trim() || null,
+          closesAt: new Date(closesAt),
+          createdByUserId: String(session.user.id),
+          betOptions: {
+            create: betOptions.map((opt) => ({
+              label: String(opt.label.trim()),
+              odds: Number(opt.odds),
+            })),
+          },
+        },
         include: {
           betOptions: true,
         },
