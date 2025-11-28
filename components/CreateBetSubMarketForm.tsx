@@ -23,6 +23,7 @@ export default function CreateBetSubMarketForm({
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [closesAt, setClosesAt] = useState("")
+  const [allowMultipleBets, setAllowMultipleBets] = useState(false)
   const [options, setOptions] = useState([
     { label: "", odds: 2.0 },
     { label: "", odds: 2.0 },
@@ -125,6 +126,7 @@ export default function CreateBetSubMarketForm({
       setTitle("")
       setDescription("")
       setClosesAt("")
+      setAllowMultipleBets(false)
       setOptions([
         { label: "", odds: 2.0 },
         { label: "", odds: 2.0 },
