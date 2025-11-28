@@ -256,7 +256,7 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
                         onChange={(e) =>
                           updateStake(index, parseInt(e.target.value) || 0)
                         }
-                        className="w-20 px-2 py-1 border border-gray-300 rounded text-xs"
+                        className="w-24 sm:w-20 px-3 py-2.5 sm:px-2 sm:py-1 border border-gray-300 rounded text-base sm:text-xs min-h-[44px] sm:min-h-[auto] touch-manipulation"
                       />
                       <span className="text-xs text-gray-600">pts</span>
                     </div>

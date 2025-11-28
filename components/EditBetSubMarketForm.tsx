@@ -120,7 +120,7 @@ export default function EditBetSubMarketForm({
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="w-full sm:w-auto bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors text-xs sm:text-sm font-medium"
+        className="w-full sm:w-auto bg-blue-600 text-white px-4 py-3 sm:px-3 sm:py-1.5 rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors text-sm sm:text-xs font-medium min-h-[48px] sm:min-h-[auto] touch-manipulation"
       >
         ✏️ Rediger Bet
       </button>
@@ -140,7 +140,7 @@ export default function EditBetSubMarketForm({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base sm:text-sm min-h-[48px] sm:min-h-[auto] touch-manipulation"
           />
         </div>
 
@@ -152,7 +152,7 @@ export default function EditBetSubMarketForm({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={2}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base sm:text-sm min-h-[48px] sm:min-h-[auto] touch-manipulation"
           />
         </div>
 
@@ -165,7 +165,7 @@ export default function EditBetSubMarketForm({
             value={closesAt}
             onChange={(e) => setClosesAt(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base sm:text-sm min-h-[48px] sm:min-h-[auto] touch-manipulation"
           />
         </div>
 
@@ -195,7 +195,7 @@ export default function EditBetSubMarketForm({
                 value={option.label}
                 onChange={(e) => updateOption(index, "label", e.target.value)}
                 required
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-4 py-3 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base sm:text-sm min-h-[48px] sm:min-h-[auto] touch-manipulation"
               />
               <input
                 type="number"
@@ -207,13 +207,13 @@ export default function EditBetSubMarketForm({
                   updateOption(index, "odds", parseFloat(e.target.value) || 1)
                 }
                 required
-                className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-28 sm:w-24 px-3 py-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base sm:text-sm min-h-[48px] sm:min-h-[auto] touch-manipulation"
               />
               {options.length > 2 && (
                 <button
                   type="button"
                   onClick={() => removeOption(index)}
-                  className="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                  className="px-4 sm:px-3 py-3 sm:py-2 bg-red-600 text-white rounded-md hover:bg-red-700 active:bg-red-800 min-w-[48px] min-h-[48px] sm:min-w-[auto] sm:min-h-[auto] touch-manipulation"
                 >
                   ×
                 </button>
@@ -233,14 +233,14 @@ export default function EditBetSubMarketForm({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-blue-600 text-white px-4 py-3 sm:py-2 rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-sm font-medium min-h-[48px] sm:min-h-[auto] touch-manipulation"
           >
             {isSubmitting ? "Opdaterer..." : "Opdater Bet"}
           </button>
           <button
             type="button"
             onClick={() => setIsOpen(false)}
-            className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors"
+            className="bg-gray-300 text-gray-700 px-4 py-3 sm:py-2 rounded-lg hover:bg-gray-400 active:bg-gray-500 transition-colors text-base sm:text-sm font-medium min-h-[48px] sm:min-h-[auto] touch-manipulation"
           >
             Annuller
           </button>
