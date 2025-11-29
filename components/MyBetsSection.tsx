@@ -78,7 +78,7 @@ export default function MyBetsSection({
   }
 
   return (
-    <div className="bg-white border-2 border-gray-300 rounded-lg">
+    <div className="bg-white border-2 border-blue-400 rounded-lg shadow-md">
       <button
         onClick={() => {
           setIsOpen(!isOpen)
@@ -87,9 +87,10 @@ export default function MyBetsSection({
             fetchMyBets()
           }
         }}
-        className="w-full flex justify-between items-center p-4 text-left hover:bg-gray-50 active:bg-gray-100 transition-colors touch-manipulation"
+        className="w-full flex justify-between items-center p-4 text-left hover:bg-blue-50 active:bg-blue-100 transition-colors touch-manipulation"
       >
         <div className="flex items-center gap-2">
+          <span className="text-lg">📋</span>
           <h3 className="font-bold text-gray-900 text-sm sm:text-base">
             Mine Bets
           </h3>
@@ -99,7 +100,7 @@ export default function MyBetsSection({
             </span>
           )}
         </div>
-        <span className="text-gray-600 text-sm">{isOpen ? "▼" : "▶"}</span>
+        <span className="text-gray-600 text-sm font-bold">{isOpen ? "▼" : "▶"}</span>
       </button>
 
       {isOpen && (
