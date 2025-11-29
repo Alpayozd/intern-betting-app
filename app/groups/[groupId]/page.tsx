@@ -9,6 +9,7 @@ import GroupBetMarkets from "@/components/GroupBetMarkets"
 import EditGroupForm from "@/components/EditGroupForm"
 import DeleteGroupButton from "@/components/DeleteGroupButton"
 import ManageMembers from "@/components/ManageMembers"
+import AutoRefreshWrapper from "@/components/AutoRefreshWrapper"
 import { formatNumber } from "@/lib/format"
 
 export default async function GroupDetailPage({
@@ -132,8 +133,9 @@ export default async function GroupDetailPage({
   const isAdmin = membership.role === "ADMIN"
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
+    <AutoRefreshWrapper interval={5000} enabled={true}>
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
       <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8 pb-24 sm:pb-32">
         <div className="mb-6">
           <Link
@@ -285,7 +287,8 @@ export default async function GroupDetailPage({
           </div>
         </div>
       </main>
-    </div>
+      </div>
+    </AutoRefreshWrapper>
   )
 }
 
