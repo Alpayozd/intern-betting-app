@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import CreateBetSubMarketForm from "./CreateBetSubMarketForm"
 import SettleBetSubMarketForm from "./SettleBetSubMarketForm"
 import EditBetSubMarketForm from "./EditBetSubMarketForm"
+import BetDetailsModal from "./BetDetailsModal"
 
 interface BetOption {
   id: string
@@ -265,9 +266,17 @@ export default function BetMarketCard({
                       {/* Vis bettingmuligheder for admin */}
                       {subMarket.betOptions && subMarket.betOptions.length > 0 && (
                         <div className="bg-blue-100 border-2 border-blue-400 rounded-lg p-3">
-                          <h5 className="text-xs sm:text-sm font-bold text-blue-900 mb-2">
-                            Bettingmuligheder (Admin Oversigt)
-                          </h5>
+                          <div className="flex justify-between items-center mb-2">
+                            <h5 className="text-xs sm:text-sm font-bold text-blue-900">
+                              Bettingmuligheder (Admin Oversigt)
+                            </h5>
+                            <button
+                              onClick={() => setOpenBetDetails({ subMarketId: subMarket.id, title: subMarket.title })}
+                              className="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 active:bg-blue-800 transition-colors font-semibold min-h-[28px] touch-manipulation"
+                            >
+                              Se alle bets
+                            </button>
+                          </div>
                           <div className="space-y-1">
                             {subMarket.betOptions.map((option) => (
                               <div
