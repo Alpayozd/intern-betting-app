@@ -6,6 +6,7 @@ import CreateBetSubMarketForm from "./CreateBetSubMarketForm"
 import SettleBetSubMarketForm from "./SettleBetSubMarketForm"
 import EditBetSubMarketForm from "./EditBetSubMarketForm"
 import BetDetailsModal from "./BetDetailsModal"
+import MyBetsSection from "./MyBetsSection"
 
 interface BetOption {
   id: string
