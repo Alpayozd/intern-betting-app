@@ -10,6 +10,7 @@ import EditGroupForm from "@/components/EditGroupForm"
 import DeleteGroupButton from "@/components/DeleteGroupButton"
 import ManageMembers from "@/components/ManageMembers"
 import AutoRefreshWrapper from "@/components/AutoRefreshWrapper"
+import MyBetsList from "@/components/MyBetsList"
 import { formatNumber } from "@/lib/format"
 
 export default async function GroupDetailPage({
