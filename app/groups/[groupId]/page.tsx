@@ -289,7 +289,7 @@ export default async function GroupDetailPage({
         </div>
 
         {/* Mine Bets sektion - nederst efter Medlemmer */}
-        <div className="mt-6 sm:mt-8">
+        <div className="mt-6 sm:mt-8 w-full">
           <MyBetsList groupId={group.id} />
         </div>
       </main>

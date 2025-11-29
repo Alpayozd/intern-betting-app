@@ -99,14 +99,14 @@ export default function MyBetsList({ groupId }: MyBetsListProps) {
   }, {} as Record<string, { marketTitle: string; marketId: string; bets: Bet[] }>)
 
   return (
-    <div className="bg-white rounded-lg shadow-lg border-2 border-gray-200">
+    <div className="bg-white rounded-lg shadow-lg border-2 border-blue-400">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full p-4 sm:p-6 border-b-2 border-gray-200 bg-gray-50 flex justify-between items-center hover:bg-gray-100 active:bg-gray-200 transition-colors touch-manipulation"
+        className="w-full p-4 sm:p-6 border-b-2 border-gray-200 bg-blue-50 flex justify-between items-center hover:bg-blue-100 active:bg-blue-200 transition-colors touch-manipulation min-h-[64px]"
       >
         <div className="flex items-center gap-2">
-          <span className="text-xl">📋</span>
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+          <span className="text-2xl sm:text-xl">📋</span>
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">
             Mine Bets
           </h2>
           {bets.length > 0 && (
@@ -115,7 +115,7 @@ export default function MyBetsList({ groupId }: MyBetsListProps) {
             </span>
           )}
         </div>
-        <span className="text-gray-600 text-lg font-bold">
+        <span className="text-gray-700 text-xl sm:text-lg font-bold">
           {isOpen ? "▼" : "▶"}
         </span>
       </button>
@@ -137,28 +137,28 @@ export default function MyBetsList({ groupId }: MyBetsListProps) {
           ) : (
             <>
               {/* Points og totals */}
-              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 space-y-2">
+              <div className="bg-blue-600 border-2 border-blue-700 rounded-lg p-4 space-y-3 shadow-md">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm sm:text-base font-semibold text-gray-700">
+                  <span className="text-sm sm:text-base font-bold text-white">
                     Dine points:
                   </span>
-                  <span className="text-lg sm:text-xl font-bold text-blue-900">
+                  <span className="text-lg sm:text-xl font-bold text-white">
                     {formatNumber(userPoints)} pts
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm sm:text-base font-semibold text-gray-700">
+                  <span className="text-sm sm:text-base font-bold text-white">
                     Total sat:
                   </span>
-                  <span className="text-base sm:text-lg font-bold text-gray-900">
+                  <span className="text-base sm:text-lg font-bold text-white">
                     {formatNumber(totalStake)} pts
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm sm:text-base font-semibold text-gray-700">
+                  <span className="text-sm sm:text-base font-bold text-white">
                     Potentiel gevinst:
                   </span>
-                  <span className="text-base sm:text-lg font-bold text-green-600">
+                  <span className="text-base sm:text-lg font-bold text-green-200">
                     {formatNumber(Math.round(totalPotentialPayout))} pts
                   </span>
                 </div>
