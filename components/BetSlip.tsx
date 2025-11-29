@@ -11,6 +11,7 @@ interface BetSelection {
   betOptionLabel: string
   odds: number
   stakePoints: number
+  stakePointsDisplay?: string // For at bevare decimaler i display
   potentialPayout: number
   allowMultipleBets?: boolean // Om flere bets er tilladt for dette BetSubMarket
 }
@@ -141,6 +142,21 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
       ? parts[0] + '.' + parts.slice(1).join('')
       : cleanValue
     
+    // Hvis værdien er tom eller kun et punktum, gem den som string
+    if (finalValue === '' || finalValue === '.') {
+      setSelections((prev) => {
+        const updated = [...prev]
+        updated[index] = {
+          ...updated[index],
+          stakePoints: 0,
+          stakePointsDisplay: finalValue,
+          potentialPayout: 0,
+        }
+        return updated
+      })
+      return
+    }
+    
     const stake = parseFloat(finalValue) || 0
     if (stake < 0) return
     
@@ -149,6 +165,7 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
       updated[index] = {
         ...updated[index],
         stakePoints: stake,
+        stakePointsDisplay: finalValue, // Gem den originale string værdi
         potentialPayout: stake * updated[index].odds,
       }
       return updated
@@ -304,7 +321,7 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
                       <input
                         type="text"
                         inputMode="decimal"
-                        value={selection.stakePoints || ''}
+                        value={selection.stakePointsDisplay !== undefined ? selection.stakePointsDisplay : (selection.stakePoints || '')}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                           const value = e.target.value.replace(/[^0-9.]/g, '')
                           // Tillad kun ét decimal point
@@ -328,13 +345,15 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
                           // Tillad piltaster til at justere værdien
                           if (e.key === 'ArrowUp') {
                             e.preventDefault()
-                            const current = parseFloat(selection.stakePoints?.toString() || '0') || 0
-                            updateStake(index, (current + 0.1).toString())
+                            const current = selection.stakePoints || 0
+                            const newValue = (current + 0.1).toFixed(1)
+                            updateStake(index, newValue)
                           } else if (e.key === 'ArrowDown') {
                             e.preventDefault()
-                            const current = parseFloat(selection.stakePoints?.toString() || '0') || 0
+                            const current = selection.stakePoints || 0
                             if (current > 0.1) {
-                              updateStake(index, (current - 0.1).toString())
+                              const newValue = (current - 0.1).toFixed(1)
+                              updateStake(index, newValue)
                             }
                           }
                         }}
@@ -344,8 +363,9 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
                         <button
                           type="button"
                           onClick={() => {
-                            const current = parseFloat(selection.stakePoints?.toString() || '0') || 0
-                            updateStake(index, (current + 0.1).toString())
+                            const current = selection.stakePoints || 0
+                            const newValue = (current + 0.1).toFixed(1)
+                            updateStake(index, newValue)
                           }}
                           className="px-1 py-0.5 text-xs text-gray-600 hover:bg-gray-100 active:bg-gray-200 touch-manipulation border-b border-gray-300"
                           aria-label="Øg stake"
@@ -355,9 +375,10 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
                         <button
                           type="button"
                           onClick={() => {
-                            const current = parseFloat(selection.stakePoints?.toString() || '0') || 0
+                            const current = selection.stakePoints || 0
                             if (current > 0.1) {
-                              updateStake(index, (current - 0.1).toString())
+                              const newValue = (current - 0.1).toFixed(1)
+                              updateStake(index, newValue)
                             }
                           }}
                           className="px-1 py-0.5 text-xs text-gray-600 hover:bg-gray-100 active:bg-gray-200 touch-manipulation"
