@@ -83,20 +83,42 @@ export default function MyBetsList({ groupId }: MyBetsListProps) {
     )
   }
 
-  // Gruppér bets efter bet market
+  // Gruppér bets efter bet market og derefter efter bet option
   const groupedBets = bets.reduce((acc, bet) => {
     const marketId = bet.betSubMarket.betMarket.id
     const marketTitle = bet.betSubMarket.betMarket.title
+    const optionId = bet.betOption.id
+    const optionLabel = bet.betOption.label
+    const optionOdds = bet.betOption.odds
+    
     if (!acc[marketId]) {
       acc[marketId] = {
         marketTitle,
         marketId,
+        options: {},
+      }
+    }
+    
+    // Gruppér efter option inden for hvert market
+    if (!acc[marketId].options[optionId]) {
+      acc[marketId].options[optionId] = {
+        optionLabel,
+        optionOdds,
         bets: [],
       }
     }
-    acc[marketId].bets.push(bet)
+    
+    acc[marketId].options[optionId].bets.push(bet)
     return acc
-  }, {} as Record<string, { marketTitle: string; marketId: string; bets: Bet[] }>)
+  }, {} as Record<string, { 
+    marketTitle: string
+    marketId: string
+    options: Record<string, {
+      optionLabel: string
+      optionOdds: number
+      bets: Bet[]
+    }>
+  }>)
 
   return (
     <div className="bg-white rounded-lg shadow-lg border-2 border-blue-400">
@@ -164,24 +186,26 @@ export default function MyBetsList({ groupId }: MyBetsListProps) {
                 </div>
               </div>
 
-              {/* Liste af bets grupperet efter bet market */}
+              {/* Liste af bets grupperet efter bet market og option */}
               <div className="space-y-4">
                 {Object.values(groupedBets).map((group) => (
-                  <div key={group.marketId} className="space-y-2">
+                  <div key={group.marketId} className="space-y-3">
                     <Link
                       href={`/bet-markets/${group.marketId}`}
                       className="block text-base sm:text-lg font-bold text-blue-600 hover:text-blue-800 mb-2"
                     >
                       {group.marketTitle}
                     </Link>
-                    {group.bets.map((bet) => {
-                      const isSettled =
-                        bet.betSubMarket.status === "SETTLED"
-                      const isWinner = isSettled && isWinningBet(bet)
+                    {Object.values(group.options).map((optionGroup) => {
+                      const firstBet = optionGroup.bets[0]
+                      const isSettled = firstBet.betSubMarket.status === "SETTLED"
+                      const isWinner = isSettled && isWinningBet(firstBet)
+                      const totalStake = optionGroup.bets.reduce((sum, bet) => sum + bet.stakePoints, 0)
+                      const totalPotentialPayout = optionGroup.bets.reduce((sum, bet) => sum + bet.potentialPayoutPoints, 0)
 
                       return (
                         <div
-                          key={bet.id}
+                          key={optionGroup.optionLabel}
                           className={`border-2 rounded-lg p-3 sm:p-4 ${
                             isSettled && isWinner
                               ? "bg-green-50 border-green-300"
@@ -190,39 +214,89 @@ export default function MyBetsList({ groupId }: MyBetsListProps) {
                               : "bg-gray-50 border-gray-200"
                           }`}
                         >
-                          <div className="flex justify-between items-start mb-2">
-                            <div className="flex-1">
-                              <p className="font-semibold text-gray-900 text-sm sm:text-base">
-                                {bet.betSubMarket.title}
-                              </p>
-                              <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                                {bet.betOption.label} @ {bet.betOption.odds.toFixed(2)}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-xs text-gray-600">Stake</p>
-                              <p className="font-bold text-gray-900 text-sm sm:text-base">
-                                {formatNumber(bet.stakePoints)} pts
-                              </p>
-                              <p className="text-xs text-gray-600 mt-1">
-                                {isSettled ? "Gevinst" : "Potentiel gevinst"}
-                              </p>
-                              <p
-                                className={`font-bold text-sm sm:text-base ${
-                                  isSettled && isWinner
-                                    ? "text-green-600"
-                                    : isSettled && !isWinner
-                                    ? "text-red-600"
-                                    : "text-green-600"
-                                }`}
-                              >
-                                {formatNumber(Math.round(bet.potentialPayoutPoints))}{" "}
-                                pts
-                              </p>
-                            </div>
+                          {/* Option header */}
+                          <div className="mb-3 pb-2 border-b-2 border-gray-300">
+                            <p className="font-bold text-gray-900 text-sm sm:text-base">
+                              {firstBet.betSubMarket.title}
+                            </p>
+                            <p className="text-xs sm:text-sm text-gray-700 mt-1 font-semibold">
+                              {optionGroup.optionLabel} @ {optionGroup.optionOdds.toFixed(2)}
+                              {optionGroup.bets.length > 1 && (
+                                <span className="ml-2 text-blue-600">
+                                  ({optionGroup.bets.length} bets)
+                                </span>
+                              )}
+                            </p>
                           </div>
+
+                          {/* Bet detaljer */}
+                          <div className="space-y-2">
+                            {optionGroup.bets.map((bet) => (
+                              <div
+                                key={bet.id}
+                                className="flex justify-between items-start bg-white rounded p-2 border border-gray-200"
+                              >
+                                <div className="flex-1">
+                                  <p className="text-xs text-gray-600">Stake</p>
+                                  <p className="font-bold text-gray-900 text-sm">
+                                    {formatNumber(bet.stakePoints)} pts
+                                  </p>
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    {new Date(bet.createdAt).toLocaleString("da-DK")}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-xs text-gray-600">
+                                    {isSettled ? "Gevinst" : "Potentiel gevinst"}
+                                  </p>
+                                  <p
+                                    className={`font-bold text-sm ${
+                                      isSettled && isWinner
+                                        ? "text-green-600"
+                                        : isSettled && !isWinner
+                                        ? "text-red-600"
+                                        : "text-green-600"
+                                    }`}
+                                  >
+                                    {formatNumber(Math.round(bet.potentialPayoutPoints))} pts
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Total for denne option */}
+                          {optionGroup.bets.length > 1 && (
+                            <div className="mt-3 pt-2 border-t-2 border-gray-300 flex justify-between items-center">
+                              <span className="text-xs sm:text-sm font-semibold text-gray-700">
+                                Total:
+                              </span>
+                              <div className="text-right">
+                                <p className="text-xs text-gray-600">Total stake</p>
+                                <p className="font-bold text-gray-900 text-sm">
+                                  {formatNumber(totalStake)} pts
+                                </p>
+                                <p className="text-xs text-gray-600 mt-1">
+                                  {isSettled ? "Total gevinst" : "Total potentiel gevinst"}
+                                </p>
+                                <p
+                                  className={`font-bold text-sm ${
+                                    isSettled && isWinner
+                                      ? "text-green-600"
+                                      : isSettled && !isWinner
+                                      ? "text-red-600"
+                                      : "text-green-600"
+                                  }`}
+                                >
+                                  {formatNumber(Math.round(totalPotentialPayout))} pts
+                                </p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Status badge */}
                           {isSettled && (
-                            <div className="mt-2">
+                            <div className="mt-3">
                               {isWinner ? (
                                 <span className="inline-block bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded">
                                   ✓ Vinder
@@ -234,10 +308,6 @@ export default function MyBetsList({ groupId }: MyBetsListProps) {
                               )}
                             </div>
                           )}
-                          <p className="text-xs text-gray-500 mt-2">
-                            Placeret:{" "}
-                            {new Date(bet.createdAt).toLocaleString("da-DK")}
-                          </p>
                         </div>
                       )
                     })}
