@@ -111,6 +111,7 @@ export default function GroupBetMarkets({
                 betMarket={market}
                 isOpen={true}
                 isAdmin={isAdmin}
+                groupId={groupId}
               />
             ))}
           </div>
@@ -127,6 +128,7 @@ export default function GroupBetMarkets({
                 betMarket={market}
                 isOpen={false}
                 isAdmin={isAdmin}
+                groupId={groupId}
               />
             ))}
           </div>

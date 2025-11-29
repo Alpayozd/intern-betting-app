@@ -5,6 +5,9 @@ import { useState, useEffect } from "react"
 import CreateBetSubMarketForm from "./CreateBetSubMarketForm"
 import SettleBetSubMarketForm from "./SettleBetSubMarketForm"
 import EditBetSubMarketForm from "./EditBetSubMarketForm"
+import EditBetMarketForm from "./EditBetMarketForm"
+import DeleteBetSubMarketButton from "./DeleteBetSubMarketButton"
+import DeleteBetMarketButton from "./DeleteBetMarketButton"
 import BetDetailsModal from "./BetDetailsModal"
 
 interface BetOption {
@@ -53,12 +56,14 @@ interface BetMarketCardProps {
   betMarket: BetMarket
   isOpen: boolean
   isAdmin?: boolean
+  groupId?: string
 }
 
 export default function BetMarketCard({
   betMarket,
   isOpen,
   isAdmin = false,
+  groupId,
 }: BetMarketCardProps) {
   const [selectedOptions, setSelectedOptions] = useState<Map<string, Set<string>>>(new Map())
   const [openBetDetails, setOpenBetDetails] = useState<{ subMarketId: string; title: string } | null>(null)
@@ -172,7 +177,22 @@ export default function BetMarketCard({
       {/* Bet Sub Markets */}
       <div className="p-3 sm:p-4">
         {isAdmin && isOpen && betMarket.id && (
-          <div className="mb-4">
+          <div className="mb-4 space-y-4">
+            <EditBetMarketForm
+              betMarketId={betMarket.id}
+              initialTitle={betMarket.title}
+              initialDescription={betMarket.description}
+              initialClosesAt={betMarket.closesAt}
+              isSettled={isSettled}
+            />
+            {groupId && (
+              <DeleteBetMarketButton
+                betMarketId={betMarket.id}
+                betMarketTitle={betMarket.title}
+                isSettled={isSettled}
+                groupId={groupId}
+              />
+            )}
             {(() => {
               // Debug: Log betMarket.id
               if (process.env.NODE_ENV === 'development') {
@@ -256,6 +276,11 @@ export default function BetMarketCard({
                             initialClosesAt={subMarket.closesAt}
                             initialBetOptions={subMarket.betOptions}
                             initialAllowMultipleBets={subMarket.allowMultipleBets || false}
+                            isSettled={isSubMarketSettled}
+                          />
+                          <DeleteBetSubMarketButton
+                            betSubMarketId={subMarket.id}
+                            betSubMarketTitle={subMarket.title}
                             isSettled={isSubMarketSettled}
                           />
                           <SettleBetSubMarketForm

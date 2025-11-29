@@ -80,7 +80,12 @@ export default function EditBetSubMarketForm({
     if (field === "odds" && typeof value === "string") {
       // Fjern leading zeros for odds
       const cleanValue = value.replace(/^0+/, '') || '1'
-      updated[index] = { ...updated[index], [field]: parseFloat(cleanValue) || 1 }
+      const parsedOdds = parseFloat(cleanValue) || 1
+      updated[index] = { 
+        ...updated[index], 
+        odds: parsedOdds,
+        oddsDisplay: cleanValue // Opdater også oddsDisplay
+      }
     } else {
       updated[index] = { ...updated[index], [field]: value }
     }
@@ -219,6 +224,33 @@ export default function EditBetSubMarketForm({
                     // Når feltet får fokus og værdien er 0, clear det
                     if (e.target.value === '0' || e.target.value === '1' || e.target.value === '1.0') {
                       e.target.value = ''
+                      // Opdater også state
+                      const updated = [...options]
+                      updated[index] = { ...updated[index], oddsDisplay: '' }
+                      setOptions(updated)
+                    }
+                  }}
+                  onBlur={(e) => {
+                    // Når feltet mister fokus, sikre at der er en gyldig værdi
+                    const value = e.target.value.trim()
+                    if (!value || isNaN(parseFloat(value)) || parseFloat(value) < 1) {
+                      const updated = [...options]
+                      updated[index] = { 
+                        ...updated[index], 
+                        odds: 1,
+                        oddsDisplay: '1'
+                      }
+                      setOptions(updated)
+                    } else {
+                      // Opdater odds til den parsed værdi
+                      const updated = [...options]
+                      const parsedOdds = parseFloat(value)
+                      updated[index] = { 
+                        ...updated[index], 
+                        odds: parsedOdds,
+                        oddsDisplay: parsedOdds.toString()
+                      }
+                      setOptions(updated)
                     }
                   }}
                   onKeyDown={(e) => {
@@ -227,13 +259,25 @@ export default function EditBetSubMarketForm({
                       e.preventDefault()
                       const current = option.odds || 1
                       const newValue = (current + 0.1).toFixed(1)
-                      updateOption(index, "odds", newValue)
+                      const updated = [...options]
+                      updated[index] = { 
+                        ...updated[index], 
+                        odds: parseFloat(newValue),
+                        oddsDisplay: newValue
+                      }
+                      setOptions(updated)
                     } else if (e.key === 'ArrowDown') {
                       e.preventDefault()
                       const current = option.odds || 1
                       if (current > 0.1) {
                         const newValue = (current - 0.1).toFixed(1)
-                        updateOption(index, "odds", newValue)
+                        const updated = [...options]
+                        updated[index] = { 
+                          ...updated[index], 
+                          odds: parseFloat(newValue),
+                          oddsDisplay: newValue
+                        }
+                        setOptions(updated)
                       }
                     }
                   }}
@@ -246,7 +290,13 @@ export default function EditBetSubMarketForm({
                     onClick={() => {
                       const current = option.odds || 1
                       const newValue = (current + 0.1).toFixed(1)
-                      updateOption(index, "odds", newValue)
+                      const updated = [...options]
+                      updated[index] = { 
+                        ...updated[index], 
+                        odds: parseFloat(newValue),
+                        oddsDisplay: newValue
+                      }
+                      setOptions(updated)
                     }}
                     className="px-1.5 py-1 text-xs text-gray-600 hover:bg-gray-100 active:bg-gray-200 touch-manipulation border-b border-gray-300"
                     aria-label="Øg odds"
@@ -259,7 +309,13 @@ export default function EditBetSubMarketForm({
                       const current = option.odds || 1
                       if (current > 0.1) {
                         const newValue = (current - 0.1).toFixed(1)
-                        updateOption(index, "odds", newValue)
+                        const updated = [...options]
+                        updated[index] = { 
+                          ...updated[index], 
+                          odds: parseFloat(newValue),
+                          oddsDisplay: newValue
+                        }
+                        setOptions(updated)
                       }
                     }}
                     className="px-1.5 py-1 text-xs text-gray-600 hover:bg-gray-100 active:bg-gray-200 touch-manipulation"

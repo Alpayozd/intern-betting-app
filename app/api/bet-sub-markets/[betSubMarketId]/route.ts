@@ -242,3 +242,72 @@ export async function PATCH(
   }
 }
 
+// DELETE - Slet BetSubMarket
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { betSubMarketId: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Ikke autoriseret" }, { status: 401 })
+    }
+
+    // Hent bet sub market
+    const betSubMarket = await prisma.betSubMarket.findUnique({
+      where: { id: params.betSubMarketId },
+      include: {
+        betMarket: {
+          include: {
+            group: {
+              include: {
+                memberships: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    if (!betSubMarket) {
+      return NextResponse.json(
+        { error: "Bet sub market ikke fundet" },
+        { status: 404 }
+      )
+    }
+
+    // Tjek om brugeren er admin
+    const membership = betSubMarket.betMarket.group.memberships.find(
+      (m) => m.userId === session.user.id && m.role === "ADMIN"
+    )
+
+    if (!membership) {
+      return NextResponse.json(
+        { error: "Kun admins kan slette bet markets" },
+        { status: 403 }
+      )
+    }
+
+    // Tjek om allerede afgjort
+    if (betSubMarket.status === "SETTLED") {
+      return NextResponse.json(
+        { error: "Kan ikke slette et bet market der allerede er afgjort" },
+        { status: 400 }
+      )
+    }
+
+    // Slet bet sub market (cascade sletter også betOptions og betSelections)
+    await prisma.betSubMarket.delete({
+      where: { id: params.betSubMarketId },
+    })
+
+    return NextResponse.json({ message: "Bet sub market slettet" })
+  } catch (error) {
+    console.error("Delete bet sub market error:", error)
+    return NextResponse.json(
+      { error: "Der opstod en fejl" },
+      { status: 500 }
+    )
+  }
+}
+

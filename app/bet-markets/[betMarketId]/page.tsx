@@ -5,6 +5,8 @@ import Navbar from "@/components/Navbar"
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import BetMarketCard from "@/components/BetMarketCard"
+import EditBetMarketForm from "@/components/EditBetMarketForm"
+import DeleteBetMarketButton from "@/components/DeleteBetMarketButton"
 import AutoRefreshWrapper from "@/components/AutoRefreshWrapper"
 import { formatNumber } from "@/lib/format"
 
@@ -151,6 +153,23 @@ export default async function BetMarketDetailPage({
               Lukker: {new Date(betMarket.closesAt).toLocaleString("da-DK")}
             </span>
           </div>
+          {isAdmin && (
+            <div className="mt-4 space-y-4">
+              <EditBetMarketForm
+                betMarketId={betMarket.id}
+                initialTitle={betMarket.title}
+                initialDescription={betMarket.description}
+                initialClosesAt={betMarket.closesAt}
+                isSettled={betMarket.status === "SETTLED"}
+              />
+              <DeleteBetMarketButton
+                betMarketId={betMarket.id}
+                betMarketTitle={betMarket.title}
+                isSettled={betMarket.status === "SETTLED"}
+                groupId={betMarket.groupId}
+              />
+            </div>
+          )}
         </div>
 
         {userScore && (
