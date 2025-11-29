@@ -110,6 +110,31 @@ export async function GET(
       )
     }
 
+    // Tjek om brugeren er admin
+    const userMembership = group.memberships.find(
+      (m) => m.userId === session.user.id
+    )
+    const isAdmin = userMembership?.role === "ADMIN"
+
+    // Hvis ikke admin, fjern bet counts fra response
+    if (!isAdmin) {
+      // Fjern _count.betSelections fra alle betOptions
+      const groupWithoutBetCounts = {
+        ...group,
+        betMarkets: group.betMarkets.map((market) => ({
+          ...market,
+          betSubMarkets: market.betSubMarkets.map((subMarket) => ({
+            ...subMarket,
+            betOptions: subMarket.betOptions.map((option) => {
+              const { _count, ...optionWithoutCount } = option
+              return optionWithoutCount
+            }),
+          })),
+        })),
+      }
+      return NextResponse.json({ group: groupWithoutBetCounts })
+    }
+
     return NextResponse.json({ group })
   } catch (error) {
     console.error("Get group error:", error)

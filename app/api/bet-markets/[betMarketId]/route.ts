@@ -87,6 +87,24 @@ export async function GET(
       )
     }
 
+    // Tjek om brugeren er admin
+    const isAdmin = membership.role === "ADMIN"
+
+    // Hvis ikke admin, fjern bet counts fra response
+    if (!isAdmin) {
+      const betMarketWithoutBetCounts = {
+        ...betMarket,
+        betSubMarkets: betMarket.betSubMarkets.map((subMarket) => ({
+          ...subMarket,
+          betOptions: subMarket.betOptions.map((option) => {
+            const { _count, ...optionWithoutCount } = option
+            return optionWithoutCount
+          }),
+        })),
+      }
+      return NextResponse.json({ betMarket: betMarketWithoutBetCounts })
+    }
+
     return NextResponse.json({ betMarket })
   } catch (error) {
     console.error("Get bet market error:", error)

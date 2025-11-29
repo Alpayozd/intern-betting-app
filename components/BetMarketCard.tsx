@@ -351,7 +351,7 @@ export default function BetMarketCard({
                               >
                                 {option.odds.toFixed(2)}
                               </span>
-                              {option._count && (
+                              {isAdmin && option._count && (
                                 <div className="text-xs sm:text-sm text-gray-700 mt-1 font-medium">
                                   ({option._count.betSelections} bets)
                                 </div>

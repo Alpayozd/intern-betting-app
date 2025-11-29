@@ -71,6 +71,30 @@ export async function GET(
       )
     }
 
+    // Tjek om brugeren er medlem og admin
+    const membership = await prisma.groupMembership.findUnique({
+      where: {
+        groupId_userId: {
+          groupId: betSubMarket.betMarket.groupId,
+          userId: session.user.id,
+        },
+      },
+    })
+
+    const isAdmin = membership?.role === "ADMIN"
+
+    // Hvis ikke admin, fjern bet counts fra response
+    if (!isAdmin) {
+      const betSubMarketWithoutBetCounts = {
+        ...betSubMarket,
+        betOptions: betSubMarket.betOptions.map((option) => {
+          const { _count, ...optionWithoutCount } = option
+          return optionWithoutCount
+        }),
+      }
+      return NextResponse.json(betSubMarketWithoutBetCounts)
+    }
+
     return NextResponse.json(betSubMarket)
   } catch (error) {
     console.error("Get bet sub market error:", error)
