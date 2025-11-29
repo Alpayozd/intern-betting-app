@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+// Bet details modal for admin
 import CreateBetSubMarketForm from "./CreateBetSubMarketForm"
 import SettleBetSubMarketForm from "./SettleBetSubMarketForm"
 import EditBetSubMarketForm from "./EditBetSubMarketForm"
