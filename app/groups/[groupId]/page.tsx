@@ -8,6 +8,7 @@ import CreateBetMarketForm from "@/components/CreateBetMarketForm"
 import GroupBetMarkets from "@/components/GroupBetMarkets"
 import EditGroupForm from "@/components/EditGroupForm"
 import DeleteGroupButton from "@/components/DeleteGroupButton"
+import ManageMembers from "@/components/ManageMembers"
 import { formatNumber } from "@/lib/format"
 
 export default async function GroupDetailPage({
@@ -249,25 +250,38 @@ export default async function GroupDetailPage({
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-lg border-2 border-gray-200">
-              <div className="p-4 sm:p-6 border-b-2 border-gray-200 bg-gray-50">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Medlemmer</h2>
-              </div>
-              <div className="divide-y divide-gray-200">
-                {group.memberships.map((membership) => (
-                  <div key={membership.id} className="p-4 sm:p-5 bg-white">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium text-gray-900 text-sm sm:text-base">{membership.user.name}</span>
-                      {membership.role === "ADMIN" && (
-                        <span className="text-xs sm:text-sm bg-blue-600 text-white px-3 py-1.5 rounded font-semibold">
-                          Admin
-                        </span>
-                      )}
+            {isAdmin ? (
+              <ManageMembers
+                groupId={group.id}
+                members={group.memberships.map((membership) => ({
+                  id: membership.id,
+                  userId: membership.userId,
+                  userName: membership.user.name,
+                  role: membership.role,
+                  isCurrentUser: membership.userId === session.user.id,
+                }))}
+              />
+            ) : (
+              <div className="bg-white rounded-lg shadow-lg border-2 border-gray-200">
+                <div className="p-4 sm:p-6 border-b-2 border-gray-200 bg-gray-50">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Medlemmer</h2>
+                </div>
+                <div className="divide-y divide-gray-200">
+                  {group.memberships.map((membership) => (
+                    <div key={membership.id} className="p-4 sm:p-5 bg-white">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium text-gray-900 text-sm sm:text-base">{membership.user.name}</span>
+                        {membership.role === "ADMIN" && (
+                          <span className="text-xs sm:text-sm bg-blue-600 text-white px-3 py-1.5 rounded font-semibold">
+                            Admin
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </main>
