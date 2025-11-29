@@ -37,11 +37,12 @@ export default function EditBetSubMarketForm({
     new Date(initialClosesAt).toISOString().slice(0, 16)
   )
   const [allowMultipleBets, setAllowMultipleBets] = useState(initialAllowMultipleBets)
-  const [options, setOptions] = useState(
+  const [options, setOptions] = useState<Array<{ id: string; label: string; odds: number; oddsDisplay?: string }>>(
     initialBetOptions.map((opt) => ({
       id: opt.id,
       label: opt.label,
       odds: opt.odds,
+      oddsDisplay: opt.odds.toString(),
     }))
   )
 
@@ -55,12 +56,13 @@ export default function EditBetSubMarketForm({
         id: opt.id,
         label: opt.label,
         odds: opt.odds,
+        oddsDisplay: opt.odds.toString(),
       }))
     )
   }, [initialTitle, initialDescription, initialClosesAt, initialBetOptions, initialAllowMultipleBets])
 
   const addOption = () => {
-    setOptions([...options, { id: "", label: "", odds: 2.0 }])
+    setOptions([...options, { id: "", label: "", odds: 2.0, oddsDisplay: "2.0" }])
   }
 
   const removeOption = (index: number) => {

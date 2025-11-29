@@ -24,13 +24,13 @@ export default function CreateBetSubMarketForm({
   const [description, setDescription] = useState("")
   const [closesAt, setClosesAt] = useState("")
   const [allowMultipleBets, setAllowMultipleBets] = useState(false)
-  const [options, setOptions] = useState([
-    { label: "", odds: 2.0 },
-    { label: "", odds: 2.0 },
+  const [options, setOptions] = useState<Array<{ label: string; odds: number; oddsDisplay?: string }>>([
+    { label: "", odds: 2.0, oddsDisplay: "2.0" },
+    { label: "", odds: 2.0, oddsDisplay: "2.0" },
   ])
 
   const addOption = () => {
-    setOptions([...options, { label: "", odds: 2.0 }])
+    setOptions([...options, { label: "", odds: 2.0, oddsDisplay: "2.0" }])
   }
 
   const removeOption = (index: number) => {
@@ -42,9 +42,33 @@ export default function CreateBetSubMarketForm({
   const updateOption = (index: number, field: "label" | "odds", value: string | number) => {
     const updated = [...options]
     if (field === "odds" && typeof value === "string") {
-      // Fjern leading zeros for odds
-      const cleanValue = value.replace(/^0+/, '') || '1'
-      updated[index] = { ...updated[index], [field]: parseFloat(cleanValue) || 1 }
+      // Tillad decimaler - fjern alt undtagen tal og decimal point
+      const cleanValue = value.replace(/[^0-9.]/g, '')
+      // Tillad kun ét decimal point
+      const parts = cleanValue.split('.')
+      const finalValue = parts.length > 2 
+        ? parts[0] + '.' + parts.slice(1).join('')
+        : cleanValue
+      
+      // Hvis værdien er tom eller kun et punktum
+      if (finalValue === '' || finalValue === '.') {
+        updated[index] = { 
+          ...updated[index], 
+          odds: 1,
+          oddsDisplay: finalValue || '1'
+        }
+      } else {
+        // Fjern leading zeros (men ikke hvis det er "0.5" fx)
+        const cleanValue2 = finalValue.startsWith('0') && !finalValue.startsWith('0.') 
+          ? finalValue.replace(/^0+/, '') || '1'
+          : finalValue
+        const oddsValue = parseFloat(cleanValue2) || 1
+        updated[index] = { 
+          ...updated[index], 
+          odds: oddsValue,
+          oddsDisplay: finalValue // Gem den originale string værdi
+        }
+      }
     } else {
       updated[index] = { ...updated[index], [field]: value }
     }
@@ -227,24 +251,70 @@ export default function CreateBetSubMarketForm({
                 required
                 className="flex-1 px-4 py-3 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base sm:text-sm min-h-[48px] sm:min-h-[auto] touch-manipulation"
               />
-              <input
-                type="text"
-                inputMode="decimal"
-                placeholder="Odds"
-                value={option.odds || ''}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/[^0-9.]/g, '')
-                  updateOption(index, "odds", value)
-                }}
-                onFocus={(e) => {
-                  // Når feltet får fokus og værdien er 0, clear det
-                  if (e.target.value === '0' || e.target.value === '1') {
-                    e.target.value = ''
-                  }
-                }}
-                required
-                className="w-28 sm:w-24 px-3 py-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-base sm:text-sm min-h-[48px] sm:min-h-[auto] touch-manipulation"
-              />
+              <div className="flex items-center border border-gray-300 rounded-md">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="Odds"
+                  value={option.oddsDisplay !== undefined ? option.oddsDisplay : (option.odds || '')}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9.]/g, '')
+                    updateOption(index, "odds", value)
+                  }}
+                  onFocus={(e) => {
+                    // Når feltet får fokus og værdien er 0 eller 1, clear det
+                    if (e.target.value === '0' || e.target.value === '1' || e.target.value === '1.0') {
+                      e.target.value = ''
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    // Tillad piltaster til at justere værdien
+                    if (e.key === 'ArrowUp') {
+                      e.preventDefault()
+                      const current = option.odds || 1
+                      const newValue = (current + 0.1).toFixed(1)
+                      updateOption(index, "odds", newValue)
+                    } else if (e.key === 'ArrowDown') {
+                      e.preventDefault()
+                      const current = option.odds || 1
+                      if (current > 0.1) {
+                        const newValue = (current - 0.1).toFixed(1)
+                        updateOption(index, "odds", newValue)
+                      }
+                    }
+                  }}
+                  required
+                  className="w-28 sm:w-24 px-3 py-3 sm:py-2 text-base sm:text-sm min-h-[48px] sm:min-h-[auto] touch-manipulation focus:outline-none focus:ring-2 focus:ring-blue-500 border-0"
+                />
+                <div className="flex flex-col border-l border-gray-300">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const current = option.odds || 1
+                      const newValue = (current + 0.1).toFixed(1)
+                      updateOption(index, "odds", newValue)
+                    }}
+                    className="px-1.5 py-1 text-xs text-gray-600 hover:bg-gray-100 active:bg-gray-200 touch-manipulation border-b border-gray-300"
+                    aria-label="Øg odds"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const current = option.odds || 1
+                      if (current > 0.1) {
+                        const newValue = (current - 0.1).toFixed(1)
+                        updateOption(index, "odds", newValue)
+                      }
+                    }}
+                    className="px-1.5 py-1 text-xs text-gray-600 hover:bg-gray-100 active:bg-gray-200 touch-manipulation"
+                    aria-label="Reducer odds"
+                  >
+                    ▼
+                  </button>
+                </div>
+              </div>
               {options.length > 2 && (
                 <button
                   type="button"
