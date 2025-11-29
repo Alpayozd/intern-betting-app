@@ -133,9 +133,15 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
   }
 
   const updateStake = (index: number, value: string) => {
-    // Fjern leading zeros og konverter til number
-    const cleanValue = value.replace(/^0+/, '') || '0'
-    const stake = parseInt(cleanValue) || 0
+    // Tillad decimaler - fjern alt undtagen tal og decimal point
+    const cleanValue = value.replace(/[^0-9.]/g, '')
+    // Tillad kun ét decimal point
+    const parts = cleanValue.split('.')
+    const finalValue = parts.length > 2 
+      ? parts[0] + '.' + parts.slice(1).join('')
+      : cleanValue
+    
+    const stake = parseFloat(finalValue) || 0
     if (stake < 0) return
     
     setSelections((prev) => {
@@ -149,9 +155,9 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
     })
   }
 
-  const totalStake = selections.reduce((sum, s) => sum + s.stakePoints, 0)
+  const totalStake = selections.reduce((sum, s) => sum + (s.stakePoints || 0), 0)
   const totalPotentialPayout = selections.reduce(
-    (sum, s) => sum + s.potentialPayout,
+    (sum, s) => sum + (s.potentialPayout || 0),
     0
   )
 
@@ -162,6 +168,13 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
       alert("Alle bets skal have en stake større end 0")
       return
     }
+
+    // Runder stake til nærmeste heltal (points er hele tal)
+    const roundedSelections = selections.map(s => ({
+      ...s,
+      stakePoints: Math.round(s.stakePoints),
+      potentialPayout: Math.round(s.stakePoints) * s.odds,
+    }))
 
     if (totalStake > userPoints) {
       alert(`Du har kun ${userPoints} points tilgængelige`)
@@ -180,7 +193,7 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
 
     setIsPlacing(true)
     try {
-      await onPlaceBets(selections)
+      await onPlaceBets(roundedSelections)
       setSelections([])
       setIsOpen(false)
     } catch (error: any) {
@@ -288,23 +301,23 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
                   <div className="flex items-center gap-1.5 mt-1">
                     <label className="text-xs text-gray-700 whitespace-nowrap">S:</label>
                     <input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      min="1"
+                      type="number"
+                      inputMode="decimal"
+                      step="0.1"
+                      min="0.1"
                       max={userPoints}
                       value={selection.stakePoints || ''}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const value: string = e.target.value.replace(/[^0-9]/g, '')
+                        const value = e.target.value
                         updateStake(index, value)
                       }}
                       onFocus={(e) => {
-                        if (e.target.value === '0') {
+                        if (e.target.value === '0' || e.target.value === '0.0') {
                           e.target.value = ''
                         }
                       }}
                       onBlur={(e) => {
-                        if (e.target.value === '' || e.target.value === '0') {
+                        if (e.target.value === '' || parseFloat(e.target.value) === 0) {
                           updateStake(index, '10')
                         }
                       }}
