@@ -60,6 +60,7 @@ export default function BetMarketCard({
   isAdmin = false,
 }: BetMarketCardProps) {
   const [selectedOptions, setSelectedOptions] = useState<Map<string, Set<string>>>(new Map())
+  const [openBetDetails, setOpenBetDetails] = useState<{ subMarketId: string; title: string } | null>(null)
 
   // Lyt til opdateringer fra bet slip
   useEffect(() => {
@@ -377,6 +378,14 @@ export default function BetMarketCard({
           </div>
         )}
       </div>
+      {openBetDetails && (
+        <BetDetailsModal
+          betSubMarketId={openBetDetails.subMarketId}
+          betSubMarketTitle={openBetDetails.title}
+          isOpen={true}
+          onClose={() => setOpenBetDetails(null)}
+        />
+      )}
     </div>
   )
 }
