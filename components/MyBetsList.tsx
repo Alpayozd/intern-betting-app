@@ -83,39 +83,48 @@ export default function MyBetsList({ groupId }: MyBetsListProps) {
     )
   }
 
-  // Gruppér bets efter bet market og derefter efter bet option
+  // Gruppér bets efter bet market og derefter efter bet sub market
   const groupedBets = bets.reduce((acc, bet) => {
     const marketId = bet.betSubMarket.betMarket.id
     const marketTitle = bet.betSubMarket.betMarket.title
-    const optionId = bet.betOption.id
-    const optionLabel = bet.betOption.label
-    const optionOdds = bet.betOption.odds
+    const subMarketId = bet.betSubMarket.id
+    const subMarketTitle = bet.betSubMarket.title
+    const subMarketStatus = bet.betSubMarket.status
+    const subMarketSettlement = bet.betSubMarket.settlement
     
     if (!acc[marketId]) {
       acc[marketId] = {
         marketTitle,
         marketId,
-        options: {},
+        subMarkets: {},
       }
     }
     
-    // Gruppér efter option inden for hvert market
-    if (!acc[marketId].options[optionId]) {
-      acc[marketId].options[optionId] = {
-        optionLabel,
-        optionOdds,
+    // Gruppér efter bet sub market inden for hvert market
+    if (!acc[marketId].subMarkets[subMarketId]) {
+      acc[marketId].subMarkets[subMarketId] = {
+        subMarketTitle,
+        subMarketStatus,
+        subMarketSettlement,
         bets: [],
       }
     }
     
-    acc[marketId].options[optionId].bets.push(bet)
+    acc[marketId].subMarkets[subMarketId].bets.push(bet)
     return acc
   }, {} as Record<string, { 
     marketTitle: string
     marketId: string
-    options: Record<string, {
-      optionLabel: string
-      optionOdds: number
+    subMarkets: Record<string, {
+      subMarketTitle: string
+      subMarketStatus: string
+      subMarketSettlement: {
+        winningOptions: {
+          betOption: {
+            id: string
+          }
+        }[]
+      } | null
       bets: Bet[]
     }>
   }>)
@@ -186,7 +195,7 @@ export default function MyBetsList({ groupId }: MyBetsListProps) {
                 </div>
               </div>
 
-              {/* Liste af bets grupperet efter bet market og option */}
+              {/* Liste af bets grupperet efter bet market og bet sub market */}
               <div className="space-y-4">
                 {Object.values(groupedBets).map((group) => (
                   <div key={group.marketId} className="space-y-3">
@@ -196,77 +205,97 @@ export default function MyBetsList({ groupId }: MyBetsListProps) {
                     >
                       {group.marketTitle}
                     </Link>
-                    {Object.values(group.options).map((optionGroup) => {
-                      const firstBet = optionGroup.bets[0]
-                      const isSettled = firstBet.betSubMarket.status === "SETTLED"
-                      const isWinner = isSettled && isWinningBet(firstBet)
-                      const totalStake = optionGroup.bets.reduce((sum, bet) => sum + bet.stakePoints, 0)
-                      const totalPotentialPayout = optionGroup.bets.reduce((sum, bet) => sum + bet.potentialPayoutPoints, 0)
+                    {Object.values(group.subMarkets).map((subMarketGroup) => {
+                      const firstBet = subMarketGroup.bets[0]
+                      const isSettled = subMarketGroup.subMarketStatus === "SETTLED"
+                      const totalStake = subMarketGroup.bets.reduce((sum, bet) => sum + bet.stakePoints, 0)
+                      const totalPotentialPayout = subMarketGroup.bets.reduce((sum, bet) => sum + bet.potentialPayoutPoints, 0)
+                      
+                      // Tjek om nogen af bets er vindere
+                      const hasWinningBets = subMarketGroup.bets.some(bet => isWinningBet(bet))
 
                       return (
                         <div
-                          key={optionGroup.optionLabel}
+                          key={subMarketGroup.subMarketTitle}
                           className={`border-2 rounded-lg p-3 sm:p-4 ${
-                            isSettled && isWinner
+                            isSettled && hasWinningBets
                               ? "bg-green-50 border-green-300"
-                              : isSettled && !isWinner
+                              : isSettled && !hasWinningBets
                               ? "bg-red-50 border-red-300"
                               : "bg-gray-50 border-gray-200"
                           }`}
                         >
-                          {/* Option header */}
+                          {/* Bet sub market header */}
                           <div className="mb-3 pb-2 border-b-2 border-gray-300">
                             <p className="font-bold text-gray-900 text-sm sm:text-base">
-                              {firstBet.betSubMarket.title}
+                              {subMarketGroup.subMarketTitle}
                             </p>
-                            <p className="text-xs sm:text-sm text-gray-700 mt-1 font-semibold">
-                              {optionGroup.optionLabel} @ {optionGroup.optionOdds.toFixed(2)}
-                              {optionGroup.bets.length > 1 && (
-                                <span className="ml-2 text-blue-600">
-                                  ({optionGroup.bets.length} bets)
-                                </span>
-                              )}
-                            </p>
+                            {subMarketGroup.bets.length > 1 && (
+                              <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                                {subMarketGroup.bets.length} bets
+                              </p>
+                            )}
                           </div>
 
-                          {/* Bet detaljer */}
+                          {/* Bet detaljer - alle bets fra samme bet sub market */}
                           <div className="space-y-2">
-                            {optionGroup.bets.map((bet) => (
-                              <div
-                                key={bet.id}
-                                className="flex justify-between items-start bg-white rounded p-2 border border-gray-200"
-                              >
-                                <div className="flex-1">
-                                  <p className="text-xs text-gray-600">Stake</p>
-                                  <p className="font-bold text-gray-900 text-sm">
-                                    {formatNumber(bet.stakePoints)} pts
-                                  </p>
-                                  <p className="text-xs text-gray-500 mt-1">
-                                    {new Date(bet.createdAt).toLocaleString("da-DK")}
-                                  </p>
+                            {subMarketGroup.bets.map((bet) => {
+                              const isWinner = isSettled && isWinningBet(bet)
+                              return (
+                                <div
+                                  key={bet.id}
+                                  className={`flex justify-between items-start rounded p-2 border ${
+                                    isSettled && isWinner
+                                      ? "bg-green-100 border-green-300"
+                                      : isSettled && !isWinner
+                                      ? "bg-red-100 border-red-300"
+                                      : "bg-white border-gray-200"
+                                  }`}
+                                >
+                                  <div className="flex-1">
+                                    <p className="text-xs sm:text-sm font-semibold text-gray-900">
+                                      {bet.betOption.label} @ {bet.betOption.odds.toFixed(2)}
+                                    </p>
+                                    <p className="text-xs text-gray-600 mt-1">Stake</p>
+                                    <p className="font-bold text-gray-900 text-sm">
+                                      {formatNumber(bet.stakePoints)} pts
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                      {new Date(bet.createdAt).toLocaleString("da-DK")}
+                                    </p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-xs text-gray-600">
+                                      {isSettled ? "Gevinst" : "Potentiel gevinst"}
+                                    </p>
+                                    <p
+                                      className={`font-bold text-sm ${
+                                        isSettled && isWinner
+                                          ? "text-green-600"
+                                          : isSettled && !isWinner
+                                          ? "text-red-600"
+                                          : "text-green-600"
+                                      }`}
+                                    >
+                                      {formatNumber(Math.round(bet.potentialPayoutPoints))} pts
+                                    </p>
+                                    {isSettled && (
+                                      <p className="text-xs mt-1">
+                                        {isWinner ? (
+                                          <span className="text-green-600 font-semibold">✓ Vinder</span>
+                                        ) : (
+                                          <span className="text-red-600 font-semibold">✗ Tabt</span>
+                                        )}
+                                      </p>
+                                    )}
+                                  </div>
                                 </div>
-                                <div className="text-right">
-                                  <p className="text-xs text-gray-600">
-                                    {isSettled ? "Gevinst" : "Potentiel gevinst"}
-                                  </p>
-                                  <p
-                                    className={`font-bold text-sm ${
-                                      isSettled && isWinner
-                                        ? "text-green-600"
-                                        : isSettled && !isWinner
-                                        ? "text-red-600"
-                                        : "text-green-600"
-                                    }`}
-                                  >
-                                    {formatNumber(Math.round(bet.potentialPayoutPoints))} pts
-                                  </p>
-                                </div>
-                              </div>
-                            ))}
+                              )
+                            })}
                           </div>
 
-                          {/* Total for denne option */}
-                          {optionGroup.bets.length > 1 && (
+                          {/* Total for denne bet sub market */}
+                          {subMarketGroup.bets.length > 1 && (
                             <div className="mt-3 pt-2 border-t-2 border-gray-300 flex justify-between items-center">
                               <span className="text-xs sm:text-sm font-semibold text-gray-700">
                                 Total:
@@ -281,9 +310,9 @@ export default function MyBetsList({ groupId }: MyBetsListProps) {
                                 </p>
                                 <p
                                   className={`font-bold text-sm ${
-                                    isSettled && isWinner
+                                    isSettled && hasWinningBets
                                       ? "text-green-600"
-                                      : isSettled && !isWinner
+                                      : isSettled && !hasWinningBets
                                       ? "text-red-600"
                                       : "text-green-600"
                                   }`}
@@ -294,16 +323,16 @@ export default function MyBetsList({ groupId }: MyBetsListProps) {
                             </div>
                           )}
 
-                          {/* Status badge */}
+                          {/* Status badge for hele bet sub market */}
                           {isSettled && (
                             <div className="mt-3">
-                              {isWinner ? (
+                              {hasWinningBets ? (
                                 <span className="inline-block bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded">
-                                  ✓ Vinder
+                                  ✓ Har vindende bets
                                 </span>
                               ) : (
                                 <span className="inline-block bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded">
-                                  ✗ Tabt
+                                  ✗ Ingen vindende bets
                                 </span>
                               )}
                             </div>
