@@ -200,6 +200,47 @@ npm test             # Kør tests
 └── README.md
 ```
 
+## 📱 Push Notifikationer
+
+Appen understøtter push notifikationer til telefonen. For at aktivere dette:
+
+### 1. Generer VAPID Keys
+
+Kør følgende kommando for at generere VAPID keys:
+
+```bash
+npx web-push generate-vapid-keys
+```
+
+Dette vil give dig en public key og en private key. Tilføj dem til din `.env` fil:
+
+```
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=din_public_key_her
+VAPID_PRIVATE_KEY=din_private_key_her
+VAPID_SUBJECT=mailto:din-email@example.com
+```
+
+### 2. Kør Database Migration
+
+Efter at have opdateret Prisma schema, kør:
+
+```bash
+npm run db:push
+```
+
+### 3. Aktiver Notifikationer i Appen
+
+1. Gå til din profil side
+2. Klik på "Aktiver" under "Push Notifikationer"
+3. Tillad notifikationer når browseren spørger
+
+### 4. Notifikationer sendes automatisk ved:
+
+- Når et bet market lukker
+- Når et bet market er afgjort
+- Når du modtager points fra et vindende bet
+- Når nogen inviterer dig til en gruppe (fremtidig feature)
+
 ## 🌐 Deployment
 
 For at få appen online, se [DEPLOYMENT.md](./DEPLOYMENT.md) for en detaljeret guide.
