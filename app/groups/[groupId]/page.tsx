@@ -286,6 +286,11 @@ export default async function GroupDetailPage({
             )}
           </div>
         </div>
+
+        {/* Mine Bets sektion - nederst efter Medlemmer */}
+        <div className="mt-6 sm:mt-8">
+          <MyBetsList groupId={group.id} />
+        </div>
       </main>
       </div>
     </AutoRefreshWrapper>
