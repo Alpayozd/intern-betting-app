@@ -300,29 +300,73 @@ export default function BetSlip({ userPoints, onPlaceBets }: BetSlipProps) {
                   </div>
                   <div className="flex items-center gap-1.5 mt-1">
                     <label className="text-xs text-gray-700 whitespace-nowrap">S:</label>
-                    <input
-                      type="number"
-                      inputMode="decimal"
-                      step="0.1"
-                      min="0.1"
-                      max={userPoints}
-                      value={selection.stakePoints || ''}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                        const value = e.target.value
-                        updateStake(index, value)
-                      }}
-                      onFocus={(e) => {
-                        if (e.target.value === '0' || e.target.value === '0.0') {
-                          e.target.value = ''
-                        }
-                      }}
-                      onBlur={(e) => {
-                        if (e.target.value === '' || parseFloat(e.target.value) === 0) {
-                          updateStake(index, '10')
-                        }
-                      }}
-                      className="w-14 px-1.5 py-0.5 border border-gray-300 rounded text-xs min-h-[28px] touch-manipulation"
-                    />
+                    <div className="flex items-center border border-gray-300 rounded">
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={selection.stakePoints || ''}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          const value = e.target.value.replace(/[^0-9.]/g, '')
+                          // Tillad kun ét decimal point
+                          const parts = value.split('.')
+                          const finalValue = parts.length > 2 
+                            ? parts[0] + '.' + parts.slice(1).join('')
+                            : value
+                          updateStake(index, finalValue)
+                        }}
+                        onFocus={(e) => {
+                          if (e.target.value === '0' || e.target.value === '0.0') {
+                            e.target.value = ''
+                          }
+                        }}
+                        onBlur={(e) => {
+                          if (e.target.value === '' || parseFloat(e.target.value) === 0) {
+                            updateStake(index, '10')
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          // Tillad piltaster til at justere værdien
+                          if (e.key === 'ArrowUp') {
+                            e.preventDefault()
+                            const current = parseFloat(selection.stakePoints?.toString() || '0') || 0
+                            updateStake(index, (current + 0.1).toString())
+                          } else if (e.key === 'ArrowDown') {
+                            e.preventDefault()
+                            const current = parseFloat(selection.stakePoints?.toString() || '0') || 0
+                            if (current > 0.1) {
+                              updateStake(index, (current - 0.1).toString())
+                            }
+                          }
+                        }}
+                        className="w-14 px-1.5 py-0.5 text-xs min-h-[28px] touch-manipulation focus:outline-none border-0"
+                      />
+                      <div className="flex flex-col border-l border-gray-300">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const current = parseFloat(selection.stakePoints?.toString() || '0') || 0
+                            updateStake(index, (current + 0.1).toString())
+                          }}
+                          className="px-1 py-0.5 text-xs text-gray-600 hover:bg-gray-100 active:bg-gray-200 touch-manipulation border-b border-gray-300"
+                          aria-label="Øg stake"
+                        >
+                          ▲
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const current = parseFloat(selection.stakePoints?.toString() || '0') || 0
+                            if (current > 0.1) {
+                              updateStake(index, (current - 0.1).toString())
+                            }
+                          }}
+                          className="px-1 py-0.5 text-xs text-gray-600 hover:bg-gray-100 active:bg-gray-200 touch-manipulation"
+                          aria-label="Reducer stake"
+                        >
+                          ▼
+                        </button>
+                      </div>
+                    </div>
                     <span className="text-xs text-gray-600">pts</span>
                     <span className="text-xs font-semibold text-blue-600 ml-auto">
                       {selection.potentialPayout.toFixed(0)}
