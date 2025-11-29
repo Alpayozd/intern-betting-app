@@ -46,6 +46,8 @@ export default function MyBetsSection({
   }, [betSubMarketId, isOpen])
 
   const fetchMyBets = async () => {
+    setLoading(true)
+    setError("")
     try {
       const response = await fetch(
         `/api/bet-sub-markets/${betSubMarketId}/my-bets`
@@ -54,6 +56,7 @@ export default function MyBetsSection({
 
       if (!response.ok) {
         setError(data.error || "Fejl ved hentning af bets")
+        setLoading(false)
         return
       }
 
@@ -74,31 +77,16 @@ export default function MyBetsSection({
     return winningOptionIds.includes(betOptionId)
   }
 
-  if (loading && isOpen) {
-    return (
-      <div className="bg-white border-2 border-gray-300 rounded-lg p-4">
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="w-full flex justify-between items-center text-left"
-        >
-          <h3 className="font-bold text-gray-900 text-sm sm:text-base">
-            Mine Bets
-          </h3>
-          <span className="text-gray-600">{isOpen ? "▼" : "▶"}</span>
-        </button>
-        {isOpen && (
-          <div className="mt-3 text-center text-gray-500 text-sm">
-            Henter...
-          </div>
-        )}
-      </div>
-    )
-  }
-
   return (
     <div className="bg-white border-2 border-gray-300 rounded-lg">
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          setIsOpen(!isOpen)
+          if (!isOpen) {
+            setLoading(true)
+            fetchMyBets()
+          }
+        }}
         className="w-full flex justify-between items-center p-4 text-left hover:bg-gray-50 active:bg-gray-100 transition-colors touch-manipulation"
       >
         <div className="flex items-center gap-2">
@@ -116,50 +104,56 @@ export default function MyBetsSection({
 
       {isOpen && (
         <div className="border-t-2 border-gray-200 p-4 space-y-4">
-          {error && (
-            <div className="bg-red-600 text-white px-4 py-3 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
-
-          {/* Points og totals */}
-          <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-3 space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-semibold text-gray-700">
-                Dine points:
-              </span>
-              <span className="text-lg font-bold text-blue-900">
-                {formatNumber(userPoints)} pts
-              </span>
-            </div>
-            {bets.length > 0 && (
-              <>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-semibold text-gray-700">
-                    Total sat:
-                  </span>
-                  <span className="text-base font-bold text-gray-900">
-                    {formatNumber(totalStake)} pts
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-semibold text-gray-700">
-                    {isSettled ? "Gevinst:" : "Potentiel gevinst:"}
-                  </span>
-                  <span className="text-base font-bold text-green-600">
-                    {formatNumber(Math.round(totalPotentialPayout))} pts
-                  </span>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Liste af bets */}
-          {bets.length === 0 ? (
+          {loading ? (
             <div className="text-center py-6 text-gray-500 text-sm">
-              <p>Du har ikke placeret nogen bets endnu</p>
+              <p>Henter...</p>
             </div>
           ) : (
+            <>
+              {error && (
+                <div className="bg-red-600 text-white px-4 py-3 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
+
+              {/* Points og totals */}
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-3 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-semibold text-gray-700">
+                    Dine points:
+                  </span>
+                  <span className="text-lg font-bold text-blue-900">
+                    {formatNumber(userPoints)} pts
+                  </span>
+                </div>
+                {bets.length > 0 && (
+                  <>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-semibold text-gray-700">
+                        Total sat:
+                      </span>
+                      <span className="text-base font-bold text-gray-900">
+                        {formatNumber(totalStake)} pts
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-semibold text-gray-700">
+                        {isSettled ? "Gevinst:" : "Potentiel gevinst:"}
+                      </span>
+                      <span className="text-base font-bold text-green-600">
+                        {formatNumber(Math.round(totalPotentialPayout))} pts
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Liste af bets */}
+              {bets.length === 0 ? (
+                <div className="text-center py-6 text-gray-500 text-sm">
+                  <p>Du har ikke placeret nogen bets endnu</p>
+                </div>
+              ) : (
             <div className="space-y-2">
               {bets.map((bet) => {
                 const isWinner = isWinningBet(bet.betOption.id)
@@ -224,7 +218,9 @@ export default function MyBetsSection({
                   </div>
                 )
               })}
-            </div>
+              </div>
+            )}
+            </>
           )}
         </div>
       )}
