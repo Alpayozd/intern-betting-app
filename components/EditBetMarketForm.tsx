@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 
 interface EditBetMarketFormProps {
@@ -27,11 +27,25 @@ export default function EditBetMarketForm({
     new Date(initialClosesAt).toISOString().slice(0, 16)
   )
 
+  // Opdater kun state når formen åbnes (isOpen går fra false til true)
+  // eller når formen lukkes og initial values ændres (efter submit)
+  const prevIsOpenRef = useRef(isOpen)
+  
   useEffect(() => {
-    setTitle(initialTitle)
-    setDescription(initialDescription || "")
-    setClosesAt(new Date(initialClosesAt).toISOString().slice(0, 16))
-  }, [initialTitle, initialDescription, initialClosesAt])
+    // Når formen åbnes (isOpen går fra false til true)
+    if (isOpen && !prevIsOpenRef.current) {
+      setTitle(initialTitle)
+      setDescription(initialDescription || "")
+      setClosesAt(new Date(initialClosesAt).toISOString().slice(0, 16))
+    }
+    // Når formen lukkes (isOpen går fra true til false), opdater state med nye initial values
+    if (!isOpen && prevIsOpenRef.current) {
+      setTitle(initialTitle)
+      setDescription(initialDescription || "")
+      setClosesAt(new Date(initialClosesAt).toISOString().slice(0, 16))
+    }
+    prevIsOpenRef.current = isOpen
+  }, [isOpen, initialTitle, initialDescription, initialClosesAt])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

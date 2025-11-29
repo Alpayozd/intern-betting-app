@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
+import React from "react"
 
 interface BetOption {
   id: string
@@ -46,20 +47,43 @@ export default function EditBetSubMarketForm({
     }))
   )
 
+  // Opdater kun state når formen åbnes (isOpen går fra false til true)
+  // eller når formen lukkes og initial values ændres (efter submit)
+  const prevIsOpenRef = useRef(isOpen)
+  
   useEffect(() => {
-    setTitle(initialTitle)
-    setDescription(initialDescription || "")
-    setClosesAt(new Date(initialClosesAt).toISOString().slice(0, 16))
-    setAllowMultipleBets(initialAllowMultipleBets)
-    setOptions(
-      initialBetOptions.map((opt) => ({
-        id: opt.id,
-        label: opt.label,
-        odds: opt.odds,
-        oddsDisplay: opt.odds.toString(),
-      }))
-    )
-  }, [initialTitle, initialDescription, initialClosesAt, initialBetOptions, initialAllowMultipleBets])
+    // Når formen åbnes (isOpen går fra false til true)
+    if (isOpen && !prevIsOpenRef.current) {
+      setTitle(initialTitle)
+      setDescription(initialDescription || "")
+      setClosesAt(new Date(initialClosesAt).toISOString().slice(0, 16))
+      setAllowMultipleBets(initialAllowMultipleBets)
+      setOptions(
+        initialBetOptions.map((opt) => ({
+          id: opt.id,
+          label: opt.label,
+          odds: opt.odds,
+          oddsDisplay: opt.odds.toString(),
+        }))
+      )
+    }
+    // Når formen lukkes (isOpen går fra true til false), opdater state med nye initial values
+    if (!isOpen && prevIsOpenRef.current) {
+      setTitle(initialTitle)
+      setDescription(initialDescription || "")
+      setClosesAt(new Date(initialClosesAt).toISOString().slice(0, 16))
+      setAllowMultipleBets(initialAllowMultipleBets)
+      setOptions(
+        initialBetOptions.map((opt) => ({
+          id: opt.id,
+          label: opt.label,
+          odds: opt.odds,
+          oddsDisplay: opt.odds.toString(),
+        }))
+      )
+    }
+    prevIsOpenRef.current = isOpen
+  }, [isOpen, initialTitle, initialDescription, initialClosesAt, initialBetOptions, initialAllowMultipleBets])
 
   const addOption = () => {
     setOptions([...options, { id: "", label: "", odds: 2.0, oddsDisplay: "2.0" }])
