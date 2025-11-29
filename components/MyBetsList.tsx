@@ -43,7 +43,7 @@ export default function MyBetsList({ groupId }: MyBetsListProps) {
   const [userPoints, setUserPoints] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
-  const [isOpen, setIsOpen] = useState(true)
+  const [isOpen, setIsOpen] = useState(true) // Starter åben som standard
 
   useEffect(() => {
     fetchMyBets()
