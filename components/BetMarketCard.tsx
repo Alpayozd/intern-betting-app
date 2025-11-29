@@ -305,6 +305,20 @@ export default function BetMarketCard({
                     </div>
                   )}
 
+                  {/* Mine Bets sektion - vises før bet muligheder */}
+                  <div className="mb-3">
+                    <MyBetsSection
+                      betSubMarketId={subMarket.id}
+                      betSubMarketTitle={subMarket.title}
+                      isSettled={isSubMarketSettled}
+                      winningOptionIds={
+                        subMarket.settlement?.winningOptions?.map(
+                          (wo) => wo.betOption.id
+                        ) || []
+                      }
+                    />
+                  </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                     {subMarket.betOptions.map((option) => {
                       const isWinner =
