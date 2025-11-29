@@ -214,11 +214,24 @@ export async function PATCH(
       }
 
       // Slet options der ikke længere er i listen
+      // Cascade delete vil automatisk slette alle relaterede BetSelections
       if (optionsToDelete.length > 0) {
+        const optionIdsToDelete = optionsToDelete.map((opt) => opt.id)
+        
+        // Slet først alle BetSelections der refererer til disse options (eksplicit for at sikre det)
+        await tx.betSelection.deleteMany({
+          where: {
+            betOptionId: {
+              in: optionIdsToDelete,
+            },
+          },
+        })
+        
+        // Slet derefter options
         await tx.betOption.deleteMany({
           where: {
             id: {
-              in: optionsToDelete.map((opt) => opt.id),
+              in: optionIdsToDelete,
             },
           },
         })
