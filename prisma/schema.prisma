@@ -11,44 +11,45 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String
-  email         String    @unique
-  passwordHash  String
-  createdAt     DateTime  @default(now())
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
 
-  createdGroups        Group[]            @relation("GroupCreator")
+  createdGroups        Group[]                  @relation("GroupCreator")
   groupMemberships     GroupMembership[]
-  createdBetMarkets    BetMarket[]        @relation("BetMarketCreator")
-  createdBetSubMarkets BetSubMarket[]      @relation("BetSubMarketCreator")
+  createdBetMarkets    BetMarket[]              @relation("BetMarketCreator")
+  createdBetSubMarkets BetSubMarket[]           @relation("BetSubMarketCreator")
   betSelections        BetSelection[]
   settledBetSubMarkets BetSubMarketSettlement[] @relation("SettledSubMarketBy")
   groupScores          GroupScore[]
+  pushSubscriptions    PushSubscription[]
 }
 
 model Group {
-  id            String    @id @default(cuid())
-  name          String
-  description   String?
-  inviteCode    String    @unique
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  inviteCode      String   @unique
   createdByUserId String
-  createdAt     DateTime  @default(now())
+  createdAt       DateTime @default(now())
 
-  createdBy     User              @relation("GroupCreator", fields: [createdByUserId], references: [id], onDelete: Cascade)
-  memberships   GroupMembership[]
-  betMarkets    BetMarket[]
-  groupScores   GroupScore[]
+  createdBy   User              @relation("GroupCreator", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  memberships GroupMembership[]
+  betMarkets  BetMarket[]
+  groupScores GroupScore[]
 }
 
 model GroupMembership {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   groupId   String
   userId    String
   role      GroupRole @default(MEMBER)
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
-  group     Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, userId])
   @@index([groupId])
@@ -61,18 +62,18 @@ enum GroupRole {
 }
 
 model BetMarket {
-  id              String        @id @default(cuid())
+  id              String          @id @default(cuid())
   groupId         String
   title           String
   description     String?
   status          BetMarketStatus @default(OPEN)
   createdByUserId String
   closesAt        DateTime
-  createdAt       DateTime      @default(now())
+  createdAt       DateTime        @default(now())
 
-  group           Group         @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  createdBy       User          @relation("BetMarketCreator", fields: [createdByUserId], references: [id])
-  betSubMarkets   BetSubMarket[]
+  group         Group          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdBy     User           @relation("BetMarketCreator", fields: [createdByUserId], references: [id])
+  betSubMarkets BetSubMarket[]
 
   @@index([groupId])
   @@index([status])
@@ -85,52 +86,52 @@ enum BetMarketStatus {
 }
 
 model BetSubMarket {
-  id              String        @id @default(cuid())
-  betMarketId     String
-  title           String
-  description     String?
-  status          BetMarketStatus @default(OPEN)
-  createdByUserId String
-  closesAt        DateTime
-  allowMultipleBets Boolean     @default(false) // Tillad flere bets per option
-  createdAt       DateTime      @default(now())
+  id                String          @id @default(cuid())
+  betMarketId       String
+  title             String
+  description       String?
+  status            BetMarketStatus @default(OPEN)
+  createdByUserId   String
+  closesAt          DateTime
+  allowMultipleBets Boolean         @default(false) // Tillad flere bets per option
+  createdAt         DateTime        @default(now())
 
-  betMarket       BetMarket        @relation(fields: [betMarketId], references: [id], onDelete: Cascade)
-  createdBy       User             @relation("BetSubMarketCreator", fields: [createdByUserId], references: [id])
-  betOptions      BetOption[]
-  betSelections   BetSelection[]
-  settlement      BetSubMarketSettlement?
+  betMarket     BetMarket               @relation(fields: [betMarketId], references: [id], onDelete: Cascade)
+  createdBy     User                    @relation("BetSubMarketCreator", fields: [createdByUserId], references: [id])
+  betOptions    BetOption[]
+  betSelections BetSelection[]
+  settlement    BetSubMarketSettlement?
 
   @@index([betMarketId])
   @@index([status])
 }
 
 model BetOption {
-  id              String   @id @default(cuid())
-  betSubMarketId  String
-  label           String
-  odds            Float
-  createdAt       DateTime @default(now())
+  id             String   @id @default(cuid())
+  betSubMarketId String
+  label          String
+  odds           Float
+  createdAt      DateTime @default(now())
 
-  betSubMarket       BetSubMarket        @relation(fields: [betSubMarketId], references: [id], onDelete: Cascade)
-  betSelections      BetSelection[]
-  winningOptions     WinningOption[]
+  betSubMarket   BetSubMarket    @relation(fields: [betSubMarketId], references: [id], onDelete: Cascade)
+  betSelections  BetSelection[]
+  winningOptions WinningOption[]
 
   @@index([betSubMarketId])
 }
 
 model BetSelection {
-  id                  String   @id @default(cuid())
-  betSubMarketId      String
-  betOptionId         String
-  userId              String
-  stakePoints         Int
+  id                    String   @id @default(cuid())
+  betSubMarketId        String
+  betOptionId           String
+  userId                String
+  stakePoints           Int
   potentialPayoutPoints Float
-  createdAt           DateTime @default(now())
+  createdAt             DateTime @default(now())
 
-  betSubMarket  BetSubMarket  @relation(fields: [betSubMarketId], references: [id], onDelete: Cascade)
-  betOption     BetOption     @relation(fields: [betOptionId], references: [id], onDelete: Cascade)
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  betSubMarket BetSubMarket @relation(fields: [betSubMarketId], references: [id], onDelete: Cascade)
+  betOption    BetOption    @relation(fields: [betOptionId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([betSubMarketId])
   @@index([userId])
@@ -143,20 +144,20 @@ model BetSubMarketSettlement {
   settledAt       DateTime @default(now())
   settledByUserId String
 
-  betSubMarket    BetSubMarket  @relation(fields: [betSubMarketId], references: [id], onDelete: Cascade)
-  settledBy       User          @relation("SettledSubMarketBy", fields: [settledByUserId], references: [id])
-  winningOptions  WinningOption[]
+  betSubMarket   BetSubMarket    @relation(fields: [betSubMarketId], references: [id], onDelete: Cascade)
+  settledBy      User            @relation("SettledSubMarketBy", fields: [settledByUserId], references: [id])
+  winningOptions WinningOption[]
 
   @@index([betSubMarketId])
 }
 
 model WinningOption {
-  id                    String   @id @default(cuid())
+  id                       String @id @default(cuid())
   betSubMarketSettlementId String
-  betOptionId           String
+  betOptionId              String
 
-  settlement            BetSubMarketSettlement @relation(fields: [betSubMarketSettlementId], references: [id], onDelete: Cascade)
-  betOption             BetOption              @relation(fields: [betOptionId], references: [id], onDelete: Cascade)
+  settlement BetSubMarketSettlement @relation(fields: [betSubMarketSettlementId], references: [id], onDelete: Cascade)
+  betOption  BetOption              @relation(fields: [betOptionId], references: [id], onDelete: Cascade)
 
   @@unique([betSubMarketSettlementId, betOptionId])
   @@index([betSubMarketSettlementId])
@@ -171,11 +172,24 @@ model GroupScore {
   initialPoints Int      @default(1000)
   updatedAt     DateTime @default(now()) @updatedAt
 
-  group         Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, userId])
   @@index([groupId])
   @@index([userId])
 }
 
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import Navbar from "@/components/Navbar"
+import NotificationSettings from "@/components/NotificationSettings"
 import { prisma } from "@/lib/prisma"
 
 export default async function ProfilePage() {
@@ -111,6 +112,10 @@ export default async function ProfilePage() {
               ))}
             </div>
           )}
+        </div>
+
+        <div className="mb-6">
+          <NotificationSettings />
         </div>
 
         <div className="bg-white rounded-lg shadow-lg border-2 border-gray-200">
